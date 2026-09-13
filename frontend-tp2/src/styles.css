@@ -1,1 +1,26 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Material+Symbols+Outlined:FILL,wght@0..1,100..700&family=Montserrat:wght@600;700;800&display=swap');
+
+:root {
+	--surface: #051424;
+	--surface-lowest: #010f1f;
+	--surface-low: #0d1c2d;
+	--surface-container: #122131;
+	--surface-high: #1c2b3c;
+	--surface-highest: #273647;
+	--text: #d4e4fa;
+	--text-muted: #c6c6ca;
+	--outline: #45474a;
+	--blue: #b4c5ff;
+	--blue-strong: #0053db;
+	--blue-text: #002a78;
+	--red: #ffb3b6;
+	--red-strong: #f12c52;
+	font-family: 'Inter', sans-serif;
+	color: var(--text);
+	background: var(--surface);
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; }
+body { background: var(--surface); }
+button, input { font: inherit; }
