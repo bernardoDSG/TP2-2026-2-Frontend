@@ -1,1 +1,29 @@
-<main class="admin-shell"><aside class="sidebar"><div class="sidebar-brand"><span class="brand-symbol">V</span><div><strong>VELOCITY</strong><small>ELITE AUTOMOTIVE</small></div></div><nav aria-label="Navegação administrativa"><a class="nav-item" routerLink="/carros"><span class="material-symbol">directions_car</span>Carros cadastrados</a><a class="nav-item active" routerLink="/carros/cadastro"><span class="material-symbol">add_circle</span>{{ isEditing ? 'Editar carro' : 'Cadastrar carro' }}</a><a class="nav-item" routerLink="/cores"><span class="material-symbol">palette</span>Cores</a></nav></aside><section class="content-area"><header class="topbar"><div><strong> {{ isEditing ? 'Editar' : 'Cadastrar' }}</strong></div></header><div class="content-inner"><section class="page-heading"><div><p class="eyebrow">{{ isEditing ? 'Edição de cadastro' : 'Novo cadastro' }}</p><h1>{{ isEditing ? 'Editar carro' : 'Cadastrar carro' }}</h1><p>Preencha os dados do veículo para manter o inventário atualizado.</p></div></section><aside class="editor"><div class="editor-heading"><div><h2>Dados do carro</h2><p>As informações serão enviadas para a API.</p></div></div><form class="car-form" [formGroup]="form" (ngSubmit)="save()"><label class="form-field"><span>Nome do carro</span><input formControlName="nome" /></label><label class="form-field select-field"><span>Status de uso</span><select formControlName="statusUsoId"><option [ngValue]="1">Seminovo</option><option [ngValue]="2">Usado</option></select></label><label class="form-field select-field"><span>Cor do carro</span><select formControlName="corId"><option [ngValue]="0" disabled>Selecione uma cor</option>@for (color of colors; track color.id) {<option [ngValue]="color.id">{{ colorLabel(color) }}</option>}</select></label>@if (form.controls.nome.invalid && form.controls.nome.touched) {<small class="field-error">Digite pelo menos 2 caracteres.</small>}@if (errorMessage()) {<small class="field-error">{{ errorMessage() }}</small>}<div class="form-actions"><a class="text-button" routerLink="/carros">Cancelar</a><button class="save-button" type="submit" [disabled]="isSaving()">{{ isSaving() ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Cadastrar carro' }} <span>→</span></button></div></form></aside></div></section></main>
+<main class="admin-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="brand-symbol">V</span><div><strong>VELOCITY</strong><small>ELITE AUTOMOTIVE</small></div></div>
+    <nav aria-label="Navegação administrativa">
+      <a class="nav-item" routerLink="/carros"><span class="material-symbol">directions_car</span>Carros cadastrados</a>
+      <a class="nav-item active" routerLink="/carros/cadastro"><span class="material-symbol">add_circle</span>{{ isEditing ? 'Editar carro' : 'Cadastrar carro' }}</a>
+      <a class="nav-item" routerLink="/cores"><span class="material-symbol">palette</span>Cores</a>
+    </nav>
+  </aside>
+  <section class="content-area">
+    <header class="topbar"><div><strong>{{ isEditing ? 'Editar' : 'Cadastrar' }}</strong></div></header>
+    <div class="content-inner">
+      <section class="page-heading">
+        <div><p class="eyebrow">{{ isEditing ? 'Edição de cadastro' : 'Novo cadastro' }}</p><h1>{{ isEditing ? 'Editar carro' : 'Cadastrar carro' }}</h1><p>Preencha os dados do veículo para manter o inventário atualizado.</p></div>
+      </section>
+      <aside class="editor">
+        <div class="editor-heading"><div><h2>Dados do carro</h2></div></div>
+        <form class="car-form" [formGroup]="form" (ngSubmit)="save()">
+          <label class="form-field"><span>Nome do carro</span><input formControlName="nome" /></label>
+          <label class="form-field select-field"><span>Status de uso</span><select formControlName="statusUsoId"><option [ngValue]="1">Seminovo</option><option [ngValue]="2">Usado</option></select></label>
+          <label class="form-field select-field"><span>Cor do carro</span><select formControlName="corId"><option [ngValue]="0" disabled>Selecione uma cor</option>@for (color of colors; track color.id) {<option [ngValue]="color.id">{{ colorLabel(color) }}</option>}</select></label>
+          @if (form.controls.nome.invalid && form.controls.nome.touched) {<small class="field-error">Digite pelo menos 2 caracteres.</small>}
+          @if (errorMessage()) {<small class="field-error">{{ errorMessage() }}</small>}
+          <div class="form-actions"><a class="text-button" routerLink="/carros">Cancelar</a><button class="save-button" type="submit" [disabled]="isSaving()">{{ isSaving() ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Cadastrar carro' }} <span>→</span></button></div>
+        </form>
+      </aside>
+    </div>
+  </section>
+</main>
