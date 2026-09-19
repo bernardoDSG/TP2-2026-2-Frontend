@@ -20,6 +20,14 @@ export class CarService {
     return this.http.get<Carro[]>(`${this.apiUrl}/nome/${encodeURIComponent(name)}`, { params: { page, pageSize } });
   }
 
+  findByColor(colorId: number, page = 0, pageSize = 100): Observable<Carro[]> {
+    return this.http.get<Carro[]>(`${this.apiUrl}/cor/${colorId}`, { params: { page, pageSize } });
+  }
+
+  findByStatus(statusId: number, page = 0, pageSize = 100): Observable<Carro[]> {
+    return this.http.get<Carro[]>(`${this.apiUrl}/status-uso/${statusId}`, { params: { page, pageSize } });
+  }
+
   create(carro: CarroPayload): Observable<Carro> {
     return this.http.post<Carro>(this.apiUrl, carro);
   }

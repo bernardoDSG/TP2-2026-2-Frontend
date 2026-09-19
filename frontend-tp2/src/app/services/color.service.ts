@@ -12,6 +12,10 @@ export class ColorService {
     return this.http.get<Color[]>(this.apiUrl, { params: { page, pageSize } });
   }
 
+  findByName(name: string, page = 0, pageSize = 100): Observable<Color[]> {
+    return this.http.get<Color[]>(`${this.apiUrl}/nome/${encodeURIComponent(name)}`, { params: { page, pageSize } });
+  }
+
   create(color: ColorPayload): Observable<Color> {
     return this.http.post<Color>(this.apiUrl, color);
   }
