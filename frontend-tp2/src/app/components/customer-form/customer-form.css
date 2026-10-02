@@ -1,0 +1,54 @@
+.customer-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.customer-form .field-error {
+  grid-column: auto;
+  margin-top: 0;
+  line-height: 1.4;
+}
+
+.cep-lookup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 42px;
+  align-items: end;
+  gap: 8px;
+}
+
+.lookup-button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 41px;
+  border: 1px solid var(--outline);
+  background: var(--surface-low);
+  color: var(--blue);
+  cursor: pointer;
+}
+
+.lookup-button:disabled {
+  cursor: wait;
+  opacity: .6;
+}
+
+.customer-form .form-message {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.field-success {
+  color: #a5e8c5;
+  font-size: 11px;
+}
+
+@media (max-width: 700px) {
+  .customer-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .customer-form .form-field + .form-field {
+    margin-top: 0;
+  }
+}
