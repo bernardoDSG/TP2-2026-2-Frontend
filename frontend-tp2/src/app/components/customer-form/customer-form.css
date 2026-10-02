@@ -91,6 +91,12 @@
   font-size: 11px;
 }
 
+.field-info {
+  color: var(--blue);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 @media (max-width: 700px) {
   .customer-form {
     display: grid;

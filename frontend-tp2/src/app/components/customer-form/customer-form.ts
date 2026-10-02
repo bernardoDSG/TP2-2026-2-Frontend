@@ -47,6 +47,7 @@ export class CustomerForm {
   protected readonly isEditing = this.id > 0;
   protected readonly isSaving = signal(false);
   protected readonly isLookingUpCep = signal(false);
+  protected readonly cepMessage = signal('');
   protected readonly errorMessage = signal('');
   protected readonly estados = signal<Estado[]>([]);
   protected readonly municipios = signal<Municipio[]>([]);
@@ -116,15 +117,17 @@ export class CustomerForm {
       return;
     }
     this.errorMessage.set('');
+    this.cepMessage.set('');
     this.isLookingUpCep.set(true);
     this.cepService.lookup(cep).pipe(
       switchMap((cepAddress) => {
         if (cepAddress.erro) {
-          this.errorMessage.set('CEP não encontrado. Confira o número e tente novamente.');
+          this.cepMessage.set('CEP não encontrado no ViaCEP. Preencha o endereço e selecione o estado e o município manualmente.');
           return of(null);
         }
         return from(this.findOrCreateLocation(cepAddress)).pipe(tap(({ estado, municipio }) => {
           this.errorMessage.set('');
+          this.cepMessage.set('');
           address.patchValue({
             logradouro: cepAddress.logradouro ?? '',
             bairro: cepAddress.bairro ?? '',

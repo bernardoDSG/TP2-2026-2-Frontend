@@ -23,7 +23,6 @@
           </label>
           <section class="address-list" formArrayName="enderecos">
             <div class="address-list-heading"><h2>Endereços</h2><button class="text-button" type="button" (click)="addAddress()">+ Adicionar endereço</button></div>
-            @if (estados().length === 0) {<p class="field-error">Cadastre estados e municípios em <a routerLink="/enderecos">Endereços</a> antes de salvar o cliente.</p>}
             @for (address of addresses.controls; track $index; let index = $index) {
               <fieldset class="address-entry" [formGroupName]="index">
                 <legend>Endereço {{ index + 1 }}</legend>
@@ -32,6 +31,7 @@
                   <div class="cep-lookup">
                     <label class="form-field"><span>CEP</span><input formControlName="cep" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="00000-000" (keyup.enter)="lookupCep(index)" (blur)="lookupCep(index)" />
                       @if (address.controls.cep.touched && address.controls.cep.invalid) {<small class="field-error">Informe um CEP com 8 dígitos.</small>}
+                      @if (cepMessage()) {<small class="field-info" role="status">{{ cepMessage() }}</small>}
                     </label>
                     <button class="lookup-button" type="button" aria-label="Consultar CEP do endereço {{ index + 1 }}" title="Consultar CEP" (click)="lookupCep(index)" [disabled]="isLookingUpCep()"><span class="material-symbol">search</span></button>
                   </div>
