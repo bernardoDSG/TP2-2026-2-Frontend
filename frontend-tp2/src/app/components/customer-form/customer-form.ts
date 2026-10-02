@@ -1,11 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { ClientePayload } from '../../models/cliente.model';
+import { Estado, Municipio } from '../../models/address-catalog.model';
+import { ClienteEndereco, ClientePayload, EnderecoPayload } from '../../models/cliente.model';
 import { CepService } from '../../services/cep.service';
 import { ClienteService } from '../../services/cliente.service';
+import { EstadoService } from '../../services/estado.service';
+import { MunicipioService } from '../../services/municipio.service';
+import { EntityMenu } from '../entity-menu/entity-menu';
 
 const cpfValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const cpf = String(control.value ?? '').replace(/\D/g, '');
@@ -26,54 +30,108 @@ const digitsLengthValidator = (min: number, max: number): ValidatorFn => (contro
 
 @Component({
   selector: 'app-customer-form',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, EntityMenu],
   templateUrl: './customer-form.html',
   styleUrls: ['../task-board/task-board.css', './customer-form.css'],
 })
 export class CustomerForm {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder);
   private readonly customers = inject(ClienteService);
   private readonly cepService = inject(CepService);
+  private readonly estadoService = inject(EstadoService);
+  private readonly municipioService = inject(MunicipioService);
 
+  protected readonly id = Number(this.route.snapshot.paramMap.get('id'));
+  protected readonly isEditing = this.id > 0;
   protected readonly isSaving = signal(false);
   protected readonly isLookingUpCep = signal(false);
   protected readonly errorMessage = signal('');
-  protected readonly successMessage = signal('');
+  protected readonly estados = signal<Estado[]>([]);
+  protected readonly municipios = signal<Municipio[]>([]);
   protected readonly form = this.formBuilder.nonNullable.group({
     nome: ['', [Validators.required, Validators.maxLength(120)]],
     cpf: ['', [Validators.required, cpfValidator]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(160)]],
     telefone: ['', [Validators.required, digitsLengthValidator(10, 11)]],
-    cep: ['', [Validators.required, digitsLengthValidator(8, 8)]],
-    logradouro: ['', [Validators.required, Validators.maxLength(160)]],
-    numero: ['', [Validators.required, Validators.maxLength(20)]],
-    complemento: ['', Validators.maxLength(100)],
-    bairro: ['', [Validators.required, Validators.maxLength(100)]],
-    municipio: ['', [Validators.required, Validators.maxLength(100)]],
-    estadoNome: ['', [Validators.required, Validators.maxLength(100)]],
-    estadoSigla: ['', [Validators.required, Validators.pattern(/^[A-Z]{2}$/)]],
+    enderecos: this.formBuilder.array([this.createAddressForm()]),
   });
 
-  protected lookupCep(): void {
-    const cep = this.form.controls.cep.value.replace(/\D/g, '');
+  protected get addresses() { return this.form.controls.enderecos; }
+
+  private createAddressForm(address?: ClienteEndereco) {
+    return this.formBuilder.nonNullable.group({
+      cep: [address?.cep ?? '', [Validators.required, digitsLengthValidator(8, 8)]],
+      logradouro: [address?.logradouro ?? '', [Validators.required, Validators.maxLength(160)]],
+      numero: [address?.numero ?? '', [Validators.required, Validators.maxLength(20)]],
+      complemento: [address?.complemento ?? '', Validators.maxLength(100)],
+      bairro: [address?.bairro ?? '', [Validators.required, Validators.maxLength(100)]],
+      estadoId: [address?.municipio.estado.id ?? 0, [Validators.required, Validators.min(1)]],
+      municipioId: [address?.municipio.id ?? 0, [Validators.required, Validators.min(1)]],
+    });
+  }
+
+  constructor() {
+    this.estadoService.getAll().subscribe({
+      next: (estados) => this.estados.set(estados),
+      error: () => this.errorMessage.set('Não foi possível carregar os estados cadastrados.'),
+    });
+    this.municipioService.getAll().subscribe({
+      next: (municipios) => this.municipios.set(municipios),
+      error: () => this.errorMessage.set('Não foi possível carregar os municípios cadastrados.'),
+    });
+    if (this.isEditing) {
+      this.customers.getById(this.id).subscribe({
+        next: (cliente) => {
+          this.form.patchValue({ nome: cliente.nome, cpf: cliente.cpf, email: cliente.email, telefone: cliente.telefone });
+          this.form.setControl('enderecos', this.formBuilder.array(cliente.enderecos.map((address) => this.createAddressForm(address))));
+        },
+        error: () => this.errorMessage.set('Não foi possível carregar o cliente.'),
+      });
+    }
+  }
+
+  protected addAddress(): void {
+    this.addresses.push(this.createAddressForm());
+  }
+
+  protected removeAddress(index: number): void {
+    if (this.addresses.length > 1) this.addresses.removeAt(index);
+  }
+
+  protected municipiosForState(estadoId: number): Municipio[] {
+    return this.municipios().filter((municipio) => municipio.estado.id === Number(estadoId));
+  }
+
+  protected setAddressState(index: number, value: string): void {
+    this.addresses.at(index).patchValue({ estadoId: Number(value), municipioId: 0 });
+  }
+
+  protected lookupCep(index: number): void {
+    const address = this.addresses.at(index);
+    const cep = address.controls.cep.value.replace(/\D/g, '');
     if (cep.length !== 8 || this.isLookingUpCep()) {
-      this.form.controls.cep.markAsTouched();
+      address.controls.cep.markAsTouched();
       return;
     }
     this.errorMessage.set('');
     this.isLookingUpCep.set(true);
     this.cepService.lookup(cep).pipe(finalize(() => this.isLookingUpCep.set(false))).subscribe({
-      next: (address) => {
-        if (address.erro) {
+      next: (cepAddress) => {
+        if (cepAddress.erro) {
           this.errorMessage.set('CEP não encontrado. Confira o número e tente novamente.');
           return;
         }
-        this.form.patchValue({
-          logradouro: address.logradouro ?? '',
-          bairro: address.bairro ?? '',
-          municipio: address.localidade ?? '',
-          estadoNome: address.estado ?? address.uf ?? '',
-          estadoSigla: address.uf ?? '',
+        const estado = this.estados().find((item) => item.sigla.toUpperCase() === cepAddress.uf.toUpperCase());
+        const municipio = estado && this.municipios().find((item) =>
+          item.estado.id === estado.id && item.nome.localeCompare(cepAddress.localidade, undefined, { sensitivity: 'accent' }) === 0,
+        );
+        address.patchValue({
+          logradouro: cepAddress.logradouro ?? '',
+          bairro: cepAddress.bairro ?? '',
+          estadoId: estado?.id ?? 0,
+          municipioId: municipio?.id ?? 0,
         });
       },
       error: () => this.errorMessage.set('Não foi possível consultar o CEP. Tente novamente.'),
@@ -87,19 +145,24 @@ export class CustomerForm {
     }
     const value = this.form.getRawValue();
     const payload: ClientePayload = {
-      ...value,
+      nome: value.nome.trim(),
       cpf: value.cpf.replace(/\D/g, ''),
+      email: value.email.trim(),
       telefone: value.telefone.replace(/\D/g, ''),
-      cep: value.cep.replace(/\D/g, ''),
-      estadoSigla: value.estadoSigla.toUpperCase(),
+      enderecos: value.enderecos.map((address): EnderecoPayload => ({
+        ...address,
+        cep: address.cep.replace(/\D/g, ''),
+        municipioId: Number(address.municipioId),
+      })),
     };
     this.errorMessage.set('');
-    this.successMessage.set('');
     this.isSaving.set(true);
-    this.customers.create(payload).pipe(finalize(() => this.isSaving.set(false))).subscribe({
+    const request$ = this.isEditing
+      ? this.customers.update(this.id, payload)
+      : this.customers.create(payload);
+    request$.pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: () => {
-        this.successMessage.set('Cliente cadastrado com sucesso.');
-        this.form.reset();
+        this.router.navigateByUrl('/clientes');
       },
       error: (error: { status?: number }) => this.errorMessage.set(
         error.status === 409 ? 'Este CPF já está cadastrado.' : 'Não foi possível cadastrar o cliente. Revise os dados e tente novamente.',

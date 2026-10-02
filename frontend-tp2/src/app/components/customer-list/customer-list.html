@@ -1,0 +1,37 @@
+<main class="admin-shell">
+  <app-entity-menu />
+  <section class="content-area">
+    <header class="topbar"><div><strong>Clientes cadastrados</strong></div></header>
+    <div class="content-inner">
+      <section class="page-heading">
+        <div><p class="eyebrow">Relacionamento</p><h1>Clientes cadastrados</h1><p>Consulte e mantenha os dados dos clientes.</p></div>
+        <a class="primary-button" routerLink="/clientes/cadastro"><span>+</span> Cadastrar cliente</a>
+      </section>
+      <section class="inventory-panel">
+        <div class="panel-heading"><div><h2>Todos os clientes</h2><p>{{ customers().length }} resultados encontrados</p></div></div>
+        @if (errorMessage()) {<p class="alert" role="alert">{{ errorMessage() }}</p>}
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>CPF</th><th>Contato</th><th>Município</th><th class="actions-heading">Ações</th></tr></thead>
+            <tbody>
+              @for (customer of customers(); track customer.id) {
+                <tr>
+                  <td><div class="vehicle-cell"><strong>{{ customer.nome }}</strong></div></td>
+                  <td class="muted-cell">{{ customer.cpf }}</td>
+                  <td>{{ customer.email }}<br /><small>{{ customer.telefone }}</small></td>
+                  <td>{{ customer.enderecos[0]?.municipio?.nome }} / {{ customer.enderecos[0]?.municipio?.estado?.sigla }}<br /><small>{{ customer.enderecos.length }} endereço(s)</small></td>
+                  <td><div class="row-actions">
+                    <a [routerLink]="['/clientes/editar', customer.id]" aria-label="Editar cliente" title="Editar"><span class="material-symbol">edit</span></a>
+                    <a [routerLink]="['/clientes/excluir', customer.id]" aria-label="Excluir cliente" title="Excluir"><span class="material-symbol">delete</span></a>
+                  </div></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="empty-state"><span class="material-symbol">group</span><strong>Nenhum cliente cadastrado</strong></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>

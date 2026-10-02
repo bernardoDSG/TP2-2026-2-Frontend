@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { Carro } from '../../models/car.model';
 import { CarService } from '../../services/car.service';
+import { EntityMenu } from '../entity-menu/entity-menu';
 
-@Component({ selector: 'app-car-delete', imports: [CommonModule, RouterLink], templateUrl: './car-delete.html', styleUrl: '../task-board/task-board.css' })
+@Component({ selector: 'app-car-delete', imports: [CommonModule, EntityMenu], templateUrl: './car-delete.html', styleUrl: '../task-board/task-board.css' })
 export class CarDelete {
   private readonly route = inject(ActivatedRoute); private readonly router = inject(Router); private readonly service = inject(CarService);
   protected readonly car = signal<Carro | null>(null); protected readonly isDeleting = signal(false); protected readonly errorMessage = signal('');

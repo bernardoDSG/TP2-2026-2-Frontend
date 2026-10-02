@@ -1,0 +1,24 @@
+<main class="admin-shell">
+  <app-entity-menu />
+  <section class="content-area">
+    <header class="topbar"><div><strong>Excluir cor</strong></div></header>
+    <div class="content-inner">
+      <section class="page-heading"><div><p class="eyebrow">Remover cadastro</p><h1>Excluir cor</h1><p>Essa ação remove a cor do catálogo.</p></div></section>
+      <aside class="editor delete-panel">
+        <span class="material-symbol delete-large">delete_forever</span>
+        <h2>Confirmar exclusão</h2>
+        <p>Deseja realmente excluir <strong>{{ color()?.nome ?? 'esta cor' }}</strong>?</p>
+        @if (linkedCars().length > 0) {
+          <p>{{ linkedCars().length }} carro(s) serão transferidos para a cor substituta escolhida.</p>
+          @if (replacementColors().length > 0) {
+            <label class="form-field select-field"><span>Substituir por</span><select [value]="replacementColorId() ?? ''" (change)="setReplacementColor($any($event.target).value)"><option value="">Selecione uma cor</option>@for (replacement of replacementColors(); track replacement.id) {<option [value]="replacement.id">{{ replacement.nome }}</option>}</select></label>
+          } @else {
+            <p>Cadastre outra cor antes de excluir esta.</p>
+          }
+        }
+        @if (errorMessage()) {<p class="field-error" role="alert">{{ errorMessage() }}</p>}
+        <div class="form-actions"><a class="text-button" routerLink="/cores">Cancelar</a><button class="delete-button" type="button" (click)="remove()" [disabled]="isDeleting() || (linkedCars().length > 0 && replacementColorId() === null)">{{ isDeleting() ? 'Excluindo...' : 'Excluir cor' }}</button></div>
+      </aside>
+    </div>
+  </section>
+</main>

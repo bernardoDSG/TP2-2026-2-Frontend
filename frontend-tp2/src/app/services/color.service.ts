@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Color, ColorPayload } from '../models/color.model';
 
@@ -10,6 +11,10 @@ export class ColorService {
 
   getAll(page = 0, pageSize = 100): Observable<Color[]> {
     return this.http.get<Color[]>(this.apiUrl, { params: { page, pageSize } });
+  }
+
+  getById(id: number): Observable<Color> {
+    return this.http.get<Color>(`${this.apiUrl}/${id}`);
   }
 
   findByName(name: string, page = 0, pageSize = 100): Observable<Color[]> {
@@ -28,7 +33,9 @@ export class ColorService {
     return this.http.put<void>(`${this.apiUrl}/${id}`, color);
   }
 
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  delete(id: number, replacementColorId?: number): Observable<void> {
+    let params = new HttpParams();
+    if (replacementColorId !== undefined) params = params.set('replacementColorId', replacementColorId);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, { params });
   }
 }

@@ -9,6 +9,55 @@
   line-height: 1.4;
 }
 
+.customer-form .address-list,
+.customer-form .form-message,
+.customer-form .form-actions {
+  grid-column: 1 / -1;
+}
+
+.address-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.address-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.address-list-heading h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.address-entry {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  border: 1px solid var(--outline);
+  padding: 18px;
+}
+
+.address-entry legend {
+  padding: 0 6px;
+  color: var(--text);
+  font: 600 12px 'Montserrat', sans-serif;
+}
+
+.address-remove {
+  justify-self: end;
+  margin-top: -10px;
+}
+
+.address-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .cep-lookup {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 42px;
@@ -50,5 +99,13 @@
 
   .customer-form .form-field + .form-field {
     margin-top: 0;
+  }
+
+  .address-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .address-list-heading {
+    align-items: flex-start;
   }
 }

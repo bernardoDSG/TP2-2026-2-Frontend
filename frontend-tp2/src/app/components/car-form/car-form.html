@@ -1,12 +1,5 @@
 <main class="admin-shell">
-  <aside class="sidebar">
-    <div class="sidebar-brand"><span class="brand-symbol">V</span><div><strong>VELOCITY</strong><small>ELITE AUTOMOTIVE</small></div></div>
-    <nav aria-label="Navegação administrativa">
-      <a class="nav-item" routerLink="/carros"><span class="material-symbol">directions_car</span>Carros cadastrados</a>
-      <a class="nav-item active" routerLink="/carros/cadastro"><span class="material-symbol">add_circle</span>{{ isEditing ? 'Editar carro' : 'Cadastrar carro' }}</a>
-      <a class="nav-item" routerLink="/cores"><span class="material-symbol">palette</span>Cores</a>
-    </nav>
-  </aside>
+  <app-entity-menu />
   <section class="content-area">
     <header class="topbar"><div><strong>{{ isEditing ? 'Editar' : 'Cadastrar' }}</strong></div></header>
     <div class="content-inner">

@@ -3,14 +3,30 @@ export interface ClientePayload {
   cpf: string;
   email: string;
   telefone: string;
+  enderecos: EnderecoPayload[];
+}
+
+export interface EnderecoPayload {
   cep: string;
   logradouro: string;
   numero: string;
   complemento: string;
   bairro: string;
-  municipio: string;
-  estadoNome: string;
-  estadoSigla: string;
+  municipioId: number;
+}
+
+export interface ClienteEndereco {
+  id: number;
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento: string | null;
+  bairro: string;
+  municipio: {
+    id: number;
+    nome: string;
+    estado: { id: number; nome: string; sigla: string };
+  };
 }
 
 export interface Cliente {
@@ -19,8 +35,5 @@ export interface Cliente {
   cpf: string;
   email: string;
   telefone: string;
-  municipio: {
-    nome: string;
-    estado: { nome: string; sigla: string };
-  };
+  enderecos: ClienteEndereco[];
 }

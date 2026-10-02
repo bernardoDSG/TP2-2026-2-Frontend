@@ -1,0 +1,16 @@
+:host { display: block; }
+.sidebar { display: flex; box-sizing: border-box; flex: 0 0 248px; flex-direction: column; min-height: 100vh; border-right: 1px solid #273647; padding: 28px 18px 20px; background: var(--surface-lowest); }
+.sidebar-brand { display: flex; align-items: center; gap: 11px; padding: 0 13px 38px; }
+.sidebar-brand strong { display: block; color: var(--text); font: 700 14px 'Montserrat', sans-serif; letter-spacing: .06em; }
+.sidebar-brand small { display: block; margin-top: 4px; color: #8f9094; font: 9px 'JetBrains Mono', monospace; letter-spacing: .12em; }
+.brand-symbol { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--blue); color: var(--blue); font: 700 15px 'Montserrat', sans-serif; }
+nav { display: grid; gap: 5px; }
+.nav-item { display: block; border-left: 2px solid transparent; padding: 12px; color: #8f9094; font: 500 12px 'Montserrat', sans-serif; text-decoration: none; transition: .2s ease; }
+.nav-item:hover, .nav-item.active { border-left-color: var(--blue); background: var(--surface-high); color: var(--text); }
+a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+@media (max-width: 700px) {
+  .sidebar { flex: none; min-height: auto; border-right: 0; border-bottom: 1px solid #273647; padding: 16px; }
+  .sidebar-brand { padding: 0 0 16px; }
+  nav { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+  .nav-item { padding: 10px 6px; text-align: center; }
+}

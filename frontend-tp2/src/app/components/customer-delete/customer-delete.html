@@ -1,0 +1,16 @@
+<main class="admin-shell">
+  <app-entity-menu />
+  <section class="content-area">
+    <header class="topbar"><div><strong>Excluir cliente</strong></div></header>
+    <div class="content-inner">
+      <section class="page-heading"><div><p class="eyebrow">Remover cadastro</p><h1>Excluir cliente</h1><p>Essa ação remove o cliente cadastrado.</p></div></section>
+      <aside class="editor delete-panel">
+        <span class="material-symbol delete-large">delete_forever</span>
+        <h2>Confirmar exclusão</h2>
+        <p>Deseja realmente excluir <strong>{{ customer()?.nome ?? 'este cliente' }}</strong>?</p>
+        @if (errorMessage()) {<p class="field-error" role="alert">{{ errorMessage() }}</p>}
+        <div class="form-actions"><a class="text-button" routerLink="/clientes">Cancelar</a><button class="delete-button" type="button" (click)="remove()" [disabled]="isDeleting()">{{ isDeleting() ? 'Excluindo...' : 'Excluir cliente' }}</button></div>
+      </aside>
+    </div>
+  </section>
+</main>

@@ -1,0 +1,18 @@
+<main class="admin-shell">
+  <app-entity-menu />
+  <section class="content-area">
+    <header class="topbar"><div><strong>{{ isEditing ? 'Editar cor' : 'Cadastrar cor' }}</strong></div></header>
+    <div class="content-inner">
+      <section class="page-heading"><div><p class="eyebrow">Catálogo de cores</p><h1>{{ isEditing ? 'Editar cor' : 'Cadastrar cor' }}</h1><p>Informe o nome e a tonalidade da cor.</p></div></section>
+      <section class="editor">
+        <div class="editor-heading"><div><h2>Dados da cor</h2></div></div>
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <label class="form-field"><span>Nome da cor</span><input formControlName="nome" />@if (form.controls.nome.touched && form.controls.nome.invalid) {<small class="field-error">Informe pelo menos 2 caracteres.</small>}</label>
+          <label class="form-field select-field"><span>Tonalidade</span><select formControlName="tonalidadeId"><option [ngValue]="1">Claro</option><option [ngValue]="2">Escuro</option><option [ngValue]="3">Puro</option></select></label>
+          @if (errorMessage()) {<small class="field-error">{{ errorMessage() }}</small>}
+          <div class="form-actions"><a class="text-button" routerLink="/cores">Cancelar</a><button class="save-button" type="submit" [disabled]="isSaving()">{{ isSaving() ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Cadastrar cor' }} <span>→</span></button></div>
+        </form>
+      </section>
+    </div>
+  </section>
+</main>

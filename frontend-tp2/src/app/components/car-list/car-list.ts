@@ -3,12 +3,13 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { RouterLink } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
+import { EntityMenu } from '../entity-menu/entity-menu';
 import { Carro } from '../../models/car.model';
 import { CarService } from '../../services/car.service';
 
 @Component({
   selector: 'app-car-list',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, EntityMenu],
   templateUrl: './car-list.html',
   styleUrl: '../task-board/task-board.css',
 })

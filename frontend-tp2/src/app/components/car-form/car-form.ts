@@ -6,10 +6,11 @@ import { finalize, Observable } from 'rxjs';
 import { Carro, CarroPayload } from '../../models/car.model';
 import { Color } from '../../models/color.model';
 import { CarService } from '../../services/car.service';
+import { EntityMenu } from '../entity-menu/entity-menu';
 
 @Component({
   selector: 'app-car-form',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, EntityMenu],
   templateUrl: './car-form.html',
   styleUrl: '../task-board/task-board.css',
 })

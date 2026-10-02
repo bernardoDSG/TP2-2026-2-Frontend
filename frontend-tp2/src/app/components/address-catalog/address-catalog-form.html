@@ -1,0 +1,23 @@
+<main class="admin-shell">
+  <app-entity-menu />
+  <section class="content-area">
+    <header class="topbar"><div><strong>{{ isEstado ? 'Estado' : 'Município' }} · {{ isEditing ? 'Editar' : 'Cadastrar' }}</strong></div></header>
+    <div class="content-inner">
+      <section class="page-heading"><div><p class="eyebrow">Localização estruturada</p><h1>{{ isEditing ? 'Editar' : 'Cadastrar' }} {{ isEstado ? 'estado' : 'município' }}</h1><p>{{ isEstado ? 'Estados podem ser associados a vários municípios.' : 'Selecione o estado ao qual o município pertence.' }}</p></div></section>
+      <section class="editor">
+        <div class="editor-heading"><div><h2>{{ isEstado ? 'Dados do estado' : 'Dados do município' }}</h2></div></div>
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <label class="form-field"><span>{{ isEstado ? 'Nome do estado' : 'Nome do município' }}</span><input formControlName="nome" maxlength="100" />@if (form.controls.nome.touched && form.controls.nome.invalid) {<small class="field-error">Informe o nome.</small>}</label>
+          @if (isEstado) {
+            <label class="form-field"><span>Sigla (UF)</span><input formControlName="sigla" maxlength="2" autocapitalize="characters" />@if (form.controls.sigla.touched && form.controls.sigla.invalid) {<small class="field-error">Informe uma UF com duas letras.</small>}</label>
+          } @else {
+            <label class="form-field select-field"><span>Estado</span><select formControlName="estadoId"><option [ngValue]="0" disabled>Selecione um estado</option>@for (estado of estados(); track estado.id) {<option [ngValue]="estado.id">{{ estado.nome }} ({{ estado.sigla }})</option>}</select></label>
+            @if (estados().length === 0) {<p class="field-error">Cadastre um estado antes de cadastrar municípios. <a routerLink="/enderecos/estados/cadastro">Cadastrar estado</a></p>}
+          }
+          @if (errorMessage()) {<p class="field-error" role="alert">{{ errorMessage() }}</p>}
+          <div class="form-actions"><a class="text-button" routerLink="/enderecos">Cancelar</a><button class="save-button" type="submit" [disabled]="isSaving() || (!isEstado && estados().length === 0)">{{ isSaving() ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Cadastrar' }} <span>→</span></button></div>
+        </form>
+      </section>
+    </div>
+  </section>
+</main>

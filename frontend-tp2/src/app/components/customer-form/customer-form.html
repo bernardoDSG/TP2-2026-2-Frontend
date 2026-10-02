@@ -1,21 +1,13 @@
 <main class="admin-shell">
-  <aside class="sidebar">
-    <div class="sidebar-brand"><span class="brand-symbol">V</span><div><strong>VELOCITY</strong><small>ELITE AUTOMOTIVE</small></div></div>
-    <nav aria-label="Navegação administrativa">
-      <a class="nav-item" routerLink="/carros"><span class="material-symbol">directions_car</span>Carros cadastrados</a>
-      <a class="nav-item" routerLink="/carros/cadastro"><span class="material-symbol">add_circle</span>Cadastrar carro</a>
-      <a class="nav-item active" routerLink="/clientes/cadastro"><span class="material-symbol">person_add</span>Clientes</a>
-      <a class="nav-item" routerLink="/cores"><span class="material-symbol">palette</span>Cores</a>
-    </nav>
-  </aside>
+  <app-entity-menu />
   <section class="content-area">
-    <header class="topbar"><div><strong>Cadastro de cliente</strong></div></header>
+    <header class="topbar"><div><strong>{{ isEditing ? 'Editar cliente' : 'Cadastro de cliente' }}</strong></div></header>
     <div class="content-inner">
       <section class="page-heading">
-        <div><p class="eyebrow">Relacionamento</p><h1>Cadastrar cliente</h1><p>Registre os dados para contato e entrega.</p></div>
+        <div><p class="eyebrow">Relacionamento</p><h1>{{ isEditing ? 'Editar cliente' : 'Cadastrar cliente' }}</h1><p>Registre os dados para contato e entrega.</p></div>
       </section>
       <section class="editor">
-        <div class="editor-heading"><div><h2>Dados pessoais e endereço</h2></div></div>
+        <div class="editor-heading"><div><h2>Dados pessoais</h2></div></div>
         <form class="customer-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
           <label class="form-field"><span>Nome completo</span><input formControlName="nome" autocomplete="name" maxlength="120" />
             @if (form.controls.nome.touched && form.controls.nome.invalid) {<small class="field-error">Informe o nome (até 120 caracteres).</small>}
@@ -29,34 +21,32 @@
           <label class="form-field"><span>Telefone</span><input formControlName="telefone" type="tel" inputmode="tel" autocomplete="tel" placeholder="DDD + número" />
             @if (form.controls.telefone.touched && form.controls.telefone.invalid) {<small class="field-error">Informe um telefone com DDD (10 ou 11 dígitos).</small>}
           </label>
-          <div class="cep-lookup">
-            <label class="form-field"><span>CEP</span><input formControlName="cep" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="00000-000" (keyup.enter)="lookupCep()" (blur)="lookupCep()" />
-              @if (form.controls.cep.touched && form.controls.cep.invalid) {<small class="field-error">Informe um CEP com 8 dígitos.</small>}
-            </label>
-            <button class="lookup-button" type="button" aria-label="Consultar CEP" title="Consultar CEP" (click)="lookupCep()" [disabled]="isLookingUpCep()"><span class="material-symbol">search</span></button>
-          </div>
-          <label class="form-field"><span>Logradouro</span><input formControlName="logradouro" autocomplete="address-line1" maxlength="160" />
-            @if (form.controls.logradouro.touched && form.controls.logradouro.invalid) {<small class="field-error">Informe o logradouro.</small>}
-          </label>
-          <label class="form-field"><span>Número</span><input formControlName="numero" autocomplete="off" maxlength="20" />
-            @if (form.controls.numero.touched && form.controls.numero.invalid) {<small class="field-error">Informe o número do endereço.</small>}
-          </label>
-          <label class="form-field"><span>Complemento</span><input formControlName="complemento" autocomplete="address-line2" maxlength="100" /></label>
-          <label class="form-field"><span>Bairro</span><input formControlName="bairro" maxlength="100" />
-            @if (form.controls.bairro.touched && form.controls.bairro.invalid) {<small class="field-error">Informe o bairro.</small>}
-          </label>
-          <label class="form-field"><span>Município</span><input formControlName="municipio" autocomplete="address-level2" maxlength="100" />
-            @if (form.controls.municipio.touched && form.controls.municipio.invalid) {<small class="field-error">Informe o município.</small>}
-          </label>
-          <label class="form-field"><span>Estado</span><input formControlName="estadoNome" autocomplete="address-level1" maxlength="100" />
-            @if (form.controls.estadoNome.touched && form.controls.estadoNome.invalid) {<small class="field-error">Informe o nome do estado.</small>}
-          </label>
-          <label class="form-field"><span>UF</span><input formControlName="estadoSigla" maxlength="2" autocapitalize="characters" />
-            @if (form.controls.estadoSigla.touched && form.controls.estadoSigla.invalid) {<small class="field-error">Informe uma UF com duas letras maiúsculas.</small>}
-          </label>
+          <section class="address-list" formArrayName="enderecos">
+            <div class="address-list-heading"><h2>Endereços</h2><div><a class="text-button" routerLink="/enderecos">Gerenciar estados e municípios</a><button class="text-button" type="button" (click)="addAddress()">+ Adicionar endereço</button></div></div>
+            @if (estados().length === 0) {<p class="field-error">Cadastre estados e municípios em <a routerLink="/enderecos">Endereços</a> antes de salvar o cliente.</p>}
+            @for (address of addresses.controls; track $index; let index = $index) {
+              <fieldset class="address-entry" [formGroupName]="index">
+                <legend>Endereço {{ index + 1 }}</legend>
+                @if (addresses.length > 1) {<button class="text-button address-remove" type="button" (click)="removeAddress(index)" aria-label="Remover endereço {{ index + 1 }}">Remover</button>}
+                <div class="address-fields">
+                  <div class="cep-lookup">
+                    <label class="form-field"><span>CEP</span><input formControlName="cep" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="00000-000" (keyup.enter)="lookupCep(index)" (blur)="lookupCep(index)" />
+                      @if (address.controls.cep.touched && address.controls.cep.invalid) {<small class="field-error">Informe um CEP com 8 dígitos.</small>}
+                    </label>
+                    <button class="lookup-button" type="button" aria-label="Consultar CEP do endereço {{ index + 1 }}" title="Consultar CEP" (click)="lookupCep(index)" [disabled]="isLookingUpCep()"><span class="material-symbol">search</span></button>
+                  </div>
+                  <label class="form-field"><span>Logradouro</span><input formControlName="logradouro" autocomplete="address-line1" maxlength="160" />@if (address.controls.logradouro.touched && address.controls.logradouro.invalid) {<small class="field-error">Informe o logradouro.</small>}</label>
+                  <label class="form-field"><span>Número</span><input formControlName="numero" autocomplete="off" maxlength="20" />@if (address.controls.numero.touched && address.controls.numero.invalid) {<small class="field-error">Informe o número.</small>}</label>
+                  <label class="form-field"><span>Complemento</span><input formControlName="complemento" autocomplete="address-line2" maxlength="100" /></label>
+                  <label class="form-field"><span>Bairro</span><input formControlName="bairro" maxlength="100" />@if (address.controls.bairro.touched && address.controls.bairro.invalid) {<small class="field-error">Informe o bairro.</small>}</label>
+                  <label class="form-field select-field"><span>Estado</span><select formControlName="estadoId" (change)="setAddressState(index, $any($event.target).value)"><option [ngValue]="0" disabled>Selecione um estado</option>@for (estado of estados(); track estado.id) {<option [ngValue]="estado.id">{{ estado.nome }} ({{ estado.sigla }})</option>}</select>@if (address.controls.estadoId.touched && address.controls.estadoId.invalid) {<small class="field-error">Selecione um estado cadastrado.</small>}</label>
+                  <label class="form-field select-field"><span>Município</span><select formControlName="municipioId"><option [ngValue]="0" disabled>Selecione um município</option>@for (municipio of municipiosForState(address.controls.estadoId.value); track municipio.id) {<option [ngValue]="municipio.id">{{ municipio.nome }}</option>}</select>@if (address.controls.municipioId.touched && address.controls.municipioId.invalid) {<small class="field-error">Selecione um município cadastrado.</small>}@if (address.controls.estadoId.value > 0 && municipiosForState(address.controls.estadoId.value).length === 0) {<small class="field-error">Não há municípios cadastrados para este estado. <a routerLink="/enderecos">Cadastrar município</a></small>}</label>
+                </div>
+              </fieldset>
+            }
+          </section>
           @if (errorMessage()) {<small class="field-error form-message" role="alert">{{ errorMessage() }}</small>}
-          @if (successMessage()) {<small class="field-success form-message" role="status">{{ successMessage() }}</small>}
-          <div class="form-actions"><button class="save-button" type="submit" [disabled]="isSaving()">{{ isSaving() ? 'Salvando...' : 'Cadastrar cliente' }} <span>→</span></button></div>
+          <div class="form-actions"><button class="save-button" type="submit" [disabled]="isSaving() || estados().length === 0">{{ isSaving() ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Cadastrar cliente' }} <span>→</span></button></div>
         </form>
       </section>
     </div>
