@@ -3,7 +3,7 @@
   <section class="content-area">
     <header class="topbar"><div><strong>{{ isEditing ? 'Editar cor' : 'Cadastrar cor' }}</strong></div></header>
     <div class="content-inner">
-      <section class="page-heading"><div><p class="eyebrow">Catálogo de cores</p><h1>{{ isEditing ? 'Editar cor' : 'Cadastrar cor' }}</h1><p>Informe o nome e a tonalidade da cor.</p></div></section>
+      <section class="page-heading"><div><h1>{{ isEditing ? 'Editar cor' : 'Cadastrar cor' }}</h1></div></section>
       <section class="editor">
         <div class="editor-heading"><div><h2>Dados da cor</h2></div></div>
         <form [formGroup]="form" (ngSubmit)="save()">

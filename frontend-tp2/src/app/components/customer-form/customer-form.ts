@@ -2,10 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, firstValueFrom, from, of, switchMap, tap } from 'rxjs';
 import { Estado, Municipio } from '../../models/address-catalog.model';
 import { ClienteEndereco, ClientePayload, EnderecoPayload } from '../../models/cliente.model';
-import { CepService } from '../../services/cep.service';
+import { CepAddress, CepService } from '../../services/cep.service';
 import { ClienteService } from '../../services/cliente.service';
 import { EstadoService } from '../../services/estado.service';
 import { MunicipioService } from '../../services/municipio.service';
@@ -100,8 +100,8 @@ export class CustomerForm {
     if (this.addresses.length > 1) this.addresses.removeAt(index);
   }
 
-  protected municipiosForState(estadoId: number): Municipio[] {
-    return this.municipios().filter((municipio) => municipio.estado.id === Number(estadoId));
+  protected municipiosForState(estadoId: number | string): Municipio[] {
+    return this.municipios().filter((municipio) => Number(municipio.estado.id) === Number(estadoId));
   }
 
   protected setAddressState(index: number, value: string): void {
@@ -117,25 +117,66 @@ export class CustomerForm {
     }
     this.errorMessage.set('');
     this.isLookingUpCep.set(true);
-    this.cepService.lookup(cep).pipe(finalize(() => this.isLookingUpCep.set(false))).subscribe({
-      next: (cepAddress) => {
+    this.cepService.lookup(cep).pipe(
+      switchMap((cepAddress) => {
         if (cepAddress.erro) {
           this.errorMessage.set('CEP não encontrado. Confira o número e tente novamente.');
-          return;
+          return of(null);
         }
-        const estado = this.estados().find((item) => item.sigla.toUpperCase() === cepAddress.uf.toUpperCase());
-        const municipio = estado && this.municipios().find((item) =>
-          item.estado.id === estado.id && item.nome.localeCompare(cepAddress.localidade, undefined, { sensitivity: 'accent' }) === 0,
-        );
-        address.patchValue({
-          logradouro: cepAddress.logradouro ?? '',
-          bairro: cepAddress.bairro ?? '',
-          estadoId: estado?.id ?? 0,
-          municipioId: municipio?.id ?? 0,
-        });
-      },
-      error: () => this.errorMessage.set('Não foi possível consultar o CEP. Tente novamente.'),
+        return from(this.findOrCreateLocation(cepAddress)).pipe(tap(({ estado, municipio }) => {
+          this.errorMessage.set('');
+          address.patchValue({
+            logradouro: cepAddress.logradouro ?? '',
+            bairro: cepAddress.bairro ?? '',
+            estadoId: estado.id,
+            municipioId: municipio.id,
+          });
+        }));
+      }),
+      finalize(() => this.isLookingUpCep.set(false)),
+    ).subscribe({
+      error: () => this.errorMessage.set('Não foi possível preencher os dados do CEP. Confira a conexão e tente novamente.'),
     });
+  }
+
+  private async findOrCreateLocation(cepAddress: CepAddress): Promise<{ estado: Estado; municipio: Municipio }> {
+    const sigla = cepAddress.uf.trim().toUpperCase();
+    const nomeEstado = cepAddress.estado?.trim() || sigla;
+    const nomeMunicipio = cepAddress.localidade.trim();
+    let estado = this.estados().find((item) => item.sigla.toUpperCase() === sigla);
+
+    if (!estado) {
+      try {
+        estado = await firstValueFrom(this.estadoService.create({ nome: nomeEstado, sigla }));
+      } catch (error) {
+        if ((error as { status?: number }).status !== 409) throw error;
+        const estados = await firstValueFrom(this.estadoService.getAll());
+        this.estados.set(estados);
+        estado = estados.find((item) => item.sigla.toUpperCase() === sigla);
+        if (!estado) throw error;
+      }
+      this.estados.update((estados) => estados.some((item) => item.id === estado!.id) ? estados : [...estados, estado!]);
+    }
+
+    let municipio = this.municipios().find((item) =>
+      item.estado.id === estado!.id && item.nome.localeCompare(nomeMunicipio, undefined, { sensitivity: 'base' }) === 0,
+    );
+    if (!municipio) {
+      try {
+        municipio = await firstValueFrom(this.municipioService.create({ nome: nomeMunicipio, estadoId: estado.id }));
+      } catch (error) {
+        if ((error as { status?: number }).status !== 409) throw error;
+        const municipios = await firstValueFrom(this.municipioService.getAll());
+        this.municipios.set(municipios);
+        municipio = municipios.find((item) =>
+          item.estado.id === estado!.id && item.nome.localeCompare(nomeMunicipio, undefined, { sensitivity: 'base' }) === 0,
+        );
+        if (!municipio) throw error;
+      }
+      this.municipios.update((municipios) => municipios.some((item) => item.id === municipio!.id) ? municipios : [...municipios, municipio!]);
+    }
+
+    return { estado, municipio };
   }
 
   protected save(): void {

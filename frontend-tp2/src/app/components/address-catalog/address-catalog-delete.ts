@@ -42,7 +42,7 @@ export class AddressCatalogDelete {
     const request$ = this.isEstado ? this.estadoService.delete(this.id) : this.municipioService.delete(this.id);
     this.isDeleting.set(true);
     request$.pipe(finalize(() => this.isDeleting.set(false))).subscribe({
-      next: () => this.router.navigateByUrl('/enderecos'),
+      next: () => this.router.navigateByUrl(`/enderecos/${this.kind}`),
       error: (error: { status?: number }) => this.errorMessage.set(
         error.status === 409
           ? this.isEstado ? 'Este estado possui municípios cadastrados.' : 'Este município está associado a endereços de clientes.'

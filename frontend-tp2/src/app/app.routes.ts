@@ -28,9 +28,10 @@ export const routes: Routes = [
 	{ path: 'cores/cadastro', component: ColorForm },
 	{ path: 'cores/editar/:id', component: ColorForm },
 	{ path: 'cores/excluir/:id', component: ColorDelete },
-	{ path: 'enderecos', component: AddressCatalog },
 	{ path: 'enderecos/:kind/cadastro', component: AddressCatalogForm },
 	{ path: 'enderecos/:kind/editar/:id', component: AddressCatalogForm },
 	{ path: 'enderecos/:kind/excluir/:id', component: AddressCatalogDelete },
+	{ path: 'enderecos/:kind', component: AddressCatalog },
+	{ path: 'enderecos', redirectTo: 'enderecos/estados', pathMatch: 'full' },
 	{ path: '**', redirectTo: 'carros' },
 ];

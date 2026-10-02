@@ -1,32 +1,26 @@
 <main class="admin-shell">
   <app-entity-menu />
   <section class="content-area">
-    <header class="topbar"><div><strong>Cadastros de endereços</strong></div></header>
+    <header class="topbar"><div><strong>{{ activeTab() === 'estados' ? 'Estados' : 'Municípios' }}</strong></div></header>
     <div class="content-inner">
       <section class="page-heading">
-        <div><p class="eyebrow">Localização estruturada</p><h1>Endereços</h1><p>Cadastre estados e municípios para selecionar nos endereços dos clientes.</p></div>
+        <div><h1>{{ activeTab() === 'estados' ? 'Estados' : 'Municípios' }}</h1></div>
         <a class="primary-button" [routerLink]="['/enderecos', activeTab(), 'cadastro']"><span>+</span> Cadastrar {{ activeTab() === 'estados' ? 'estado' : 'município' }}</a>
       </section>
       @if (errorMessage()) {<p class="alert" role="alert">{{ errorMessage() }}</p>}
       <section class="inventory-panel">
-        <div class="panel-heading">
-          <div class="segmented-control" role="tablist" aria-label="Tipo de cadastro">
-            <button type="button" role="tab" [attr.aria-selected]="activeTab() === 'estados'" [class.active]="activeTab() === 'estados'" (click)="selectTab('estados')">Estados <span>{{ estados().length }}</span></button>
-            <button type="button" role="tab" [attr.aria-selected]="activeTab() === 'municipios'" [class.active]="activeTab() === 'municipios'" (click)="selectTab('municipios')">Municípios <span>{{ municipios().length }}</span></button>
-          </div>
-        </div>
         <div class="table-wrap">
           @if (activeTab() === 'estados') {
             <table><thead><tr><th>Estado</th><th>UF</th><th class="actions-heading">Ações</th></tr></thead><tbody>
               @for (estado of estados(); track estado.id) {
                 <tr><td>{{ estado.nome }}</td><td>{{ estado.sigla }}</td><td><div class="row-actions"><a [routerLink]="['/enderecos/estados/editar', estado.id]" aria-label="Editar estado" title="Editar"><span class="material-symbol">edit</span></a><a [routerLink]="['/enderecos/estados/excluir', estado.id]" aria-label="Excluir estado" title="Excluir"><span class="material-symbol">delete</span></a></div></td></tr>
-              } @empty {<tr><td colspan="3" class="empty-state"><strong>Nenhum estado cadastrado</strong><small>Cadastre estados para associar municípios e endereços.</small></td></tr>}
+              } @empty {<tr><td colspan="3" class="empty-state"><strong>Nenhum estado cadastrado</strong></td></tr>}
             </tbody></table>
           } @else {
             <table><thead><tr><th>Município</th><th>Estado</th><th class="actions-heading">Ações</th></tr></thead><tbody>
               @for (municipio of municipios(); track municipio.id) {
                 <tr><td>{{ municipio.nome }}</td><td>{{ municipio.estado.nome }} ({{ municipio.estado.sigla }})</td><td><div class="row-actions"><a [routerLink]="['/enderecos/municipios/editar', municipio.id]" aria-label="Editar município" title="Editar"><span class="material-symbol">edit</span></a><a [routerLink]="['/enderecos/municipios/excluir', municipio.id]" aria-label="Excluir município" title="Excluir"><span class="material-symbol">delete</span></a></div></td></tr>
-              } @empty {<tr><td colspan="3" class="empty-state"><strong>Nenhum município cadastrado</strong><small>Cadastre municípios vinculados a um estado.</small></td></tr>}
+              } @empty {<tr><td colspan="3" class="empty-state"><strong>Nenhum município cadastrado</strong></td></tr>}
             </tbody></table>
           }
         </div>

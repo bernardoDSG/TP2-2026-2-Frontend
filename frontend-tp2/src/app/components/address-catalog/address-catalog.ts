@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Estado, Municipio } from '../../models/address-catalog.model';
 import { EstadoService } from '../../services/estado.service';
 import { MunicipioService } from '../../services/municipio.service';
@@ -15,19 +15,19 @@ type AddressTab = 'estados' | 'municipios';
   styleUrl: '../task-board/task-board.css',
 })
 export class AddressCatalog {
+  private readonly route = inject(ActivatedRoute);
   private readonly estadosService = inject(EstadoService);
   private readonly municipiosService = inject(MunicipioService);
-  protected readonly activeTab = signal<AddressTab>('estados');
+  protected readonly activeTab = signal<AddressTab>(this.route.snapshot.paramMap.get('kind') === 'municipios' ? 'municipios' : 'estados');
   protected readonly estados = signal<Estado[]>([]);
   protected readonly municipios = signal<Municipio[]>([]);
   protected readonly errorMessage = signal('');
 
   constructor() {
+    this.route.paramMap.subscribe((params) => {
+      this.activeTab.set(params.get('kind') === 'municipios' ? 'municipios' : 'estados');
+    });
     this.load();
-  }
-
-  protected selectTab(tab: AddressTab): void {
-    this.activeTab.set(tab);
   }
 
   private load(): void {

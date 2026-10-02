@@ -29,8 +29,8 @@ export class AddressCatalogForm {
   protected readonly errorMessage = signal('');
   protected readonly form = this.formBuilder.nonNullable.group({
     nome: ['', [Validators.required, Validators.maxLength(100)]],
-    sigla: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]],
-    estadoId: [0, [Validators.required, Validators.min(1)]],
+    sigla: ['', this.isEstado ? [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)] : []],
+    estadoId: [0, this.isEstado ? [] : [Validators.required, Validators.min(1)]],
   });
 
   constructor() {
@@ -54,7 +54,7 @@ export class AddressCatalogForm {
   }
 
   protected save(): void {
-    if (this.form.invalid || this.isSaving() || (!this.isEstado && this.estados().length === 0)) {
+    if (this.form.invalid || this.isSaving() || (!this.isEstado && (this.estados().length === 0 || this.form.controls.estadoId.value < 1))) {
       this.form.markAllAsTouched();
       return;
     }
@@ -68,7 +68,7 @@ export class AddressCatalogForm {
         : this.municipioService.create({ nome: value.nome.trim(), estadoId: value.estadoId });
     this.isSaving.set(true);
     request$.pipe(finalize(() => this.isSaving.set(false))).subscribe({
-      next: () => this.router.navigateByUrl('/enderecos'),
+      next: () => this.router.navigateByUrl(`/enderecos/${this.kind}`),
       error: (error: { status?: number }) => this.errorMessage.set(
         error.status === 409 ? `Já existe um ${this.isEstado ? 'estado' : 'município'} com esses dados.` : 'Não foi possível salvar o cadastro.',
       ),
