@@ -1,0 +1,32 @@
+<main class="admin-shell">
+  <app-entity-menu />
+  <section class="content-area">
+    <header class="topbar"><div><strong>Marcas</strong></div></header>
+    <div class="content-inner">
+      <section class="page-heading"><div><h1>Gestão de marcas</h1></div><a class="primary-button" routerLink="/marcas/cadastro"><span>+</span> Cadastrar marca</a></section>
+      <section class="inventory-panel">
+        <div class="panel-heading">
+          <div><h2>Marcas cadastradas</h2><p>{{ marcas().length }} resultados encontrados</p></div>
+          <div class="table-controls">
+            <label class="page-size">Itens por página<select [value]="itemsPerPage()" (change)="setItemsPerPage($any($event.target).value)"><option value="5">5</option><option value="10">10</option><option value="25">25</option><option value="50">50</option></select></label>
+            <label class="search-field"><span class="material-symbol">search</span><input #search type="search" placeholder="Buscar marca por nome" [value]="searchTerm()" (input)="setSearchTerm(search.value)" /></label>
+          </div>
+        </div>
+        @if (errorMessage()) {<p class="alert" role="alert">{{ errorMessage() }}</p>}
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nome</th><th>ID</th><th class="actions-heading">Ações</th></tr></thead>
+            <tbody>
+              @for (marca of visibleMarcas(); track marca.id) {
+                <tr><td><div class="vehicle-cell"><strong>{{ marca.nome }}</strong></div></td><td class="muted-cell">#{{ marca.id }}</td><td><div class="row-actions"><a [routerLink]="['/marcas/editar', marca.id]" aria-label="Editar marca" title="Editar"><span class="material-symbol">edit</span></a><a [routerLink]="['/marcas/excluir', marca.id]" aria-label="Excluir marca" title="Excluir"><span class="material-symbol">delete</span></a></div></td></tr>
+              } @empty {
+                <tr><td colspan="3" class="empty-state"><span class="material-symbol">sell</span><strong>Nenhuma marca cadastrada</strong></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination"><span>Página {{ currentPage() }} de {{ totalPages() }}</span><div><button type="button" (click)="previousPage()" [disabled]="currentPage() === 1" aria-label="Página anterior"><span class="material-symbol">chevron_left</span></button><button type="button" (click)="nextPage()" [disabled]="currentPage() === totalPages()" aria-label="Próxima página"><span class="material-symbol">chevron_right</span></button></div></div>
+      </section>
+    </div>
+  </section>
+</main>

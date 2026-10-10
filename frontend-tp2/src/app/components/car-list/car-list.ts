@@ -21,6 +21,7 @@ export class CarList {
   protected readonly nameFilter = signal('');
   protected readonly colorFilter = signal('');
   protected readonly statusFilter = signal('');
+  protected readonly brandFilter = signal('');
   protected readonly itemsPerPage = signal(10);
   protected readonly currentPage = signal(1);
   protected readonly errorMessage = signal('');
@@ -34,6 +35,11 @@ export class CarList {
     this.catalogCars().forEach((car) => { if (car.statusUso) statuses.set(car.statusUso.id, car.statusUso.nome); });
     return [...statuses.entries()].map(([id, nome]) => ({ id, nome })).sort((first, second) => first.nome.localeCompare(second.nome));
   });
+  protected readonly availableBrands = computed(() => {
+    const brands = new Map<number, string>();
+    this.catalogCars().forEach((car) => { if (car.marca) brands.set(car.marca.id, car.marca.nome); });
+    return [...brands.entries()].map(([id, nome]) => ({ id, nome })).sort((first, second) => first.nome.localeCompare(second.nome));
+  });
   protected readonly filteredCars = computed(() => this.cars());
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.cars().length / this.itemsPerPage())));
   protected readonly visibleCars = computed(() => {
@@ -44,6 +50,7 @@ export class CarList {
   protected setNameFilter(value: string): void { this.nameFilter.set(value); this.loadFilteredCars(); }
   protected setColorFilter(value: string): void { this.colorFilter.set(value); this.loadFilteredCars(); }
   protected setStatusFilter(value: string): void { this.statusFilter.set(value); this.loadFilteredCars(); }
+  protected setBrandFilter(value: string): void { this.brandFilter.set(value); this.loadFilteredCars(); }
   protected setItemsPerPage(value: string): void { this.itemsPerPage.set(Number(value)); this.currentPage.set(1); }
   protected previousPage(): void { this.currentPage.update((page) => Math.max(1, page - 1)); }
   protected nextPage(): void { this.currentPage.update((page) => Math.min(this.totalPages(), page + 1)); }
@@ -54,6 +61,7 @@ export class CarList {
     if (name) requests.push(this.service.findByName(name));
     if (this.colorFilter()) requests.push(this.service.findByColor(Number(this.colorFilter())));
     if (this.statusFilter()) requests.push(this.service.findByStatus(Number(this.statusFilter())));
+    if (this.brandFilter()) requests.push(this.service.findByBrand(Number(this.brandFilter())));
 
     if (!requests.length) {
       this.cars.set(this.catalogCars());
@@ -72,6 +80,7 @@ export class CarList {
     });
   }
   protected statusName(car: Carro): string { return car.statusUso?.nome ?? 'Sem status'; }
+  protected brandName(car: Carro): string { return car.marca?.nome ?? 'Sem marca'; }
   protected colorLabel(car: Carro): string {
     const color = car.cor;
     if (!color) return 'Sem cor';

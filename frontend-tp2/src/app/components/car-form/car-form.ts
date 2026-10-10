@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
 import { Carro, CarroPayload } from '../../models/car.model';
 import { Color } from '../../models/color.model';
+import { Marca } from '../../models/marca.model';
 import { CarService } from '../../services/car.service';
 import { EntityMenu } from '../entity-menu/entity-menu';
 
@@ -25,10 +26,12 @@ export class CarForm {
   protected readonly isSaving = signal(false);
   protected readonly errorMessage = signal('');
   protected readonly colors = this.route.snapshot.data['colors'] as Color[];
+  protected readonly marcas = this.route.snapshot.data['marcas'] as Marca[];
   protected readonly form = this.formBuilder.nonNullable.group({
     nome: ['', [Validators.required, Validators.minLength(2)]],
     statusUsoId: [1, Validators.required],
     corId: [0, Validators.required],
+    marcaId: [0, [Validators.required, Validators.min(1)]],
   });
 
   constructor() {
@@ -38,6 +41,7 @@ export class CarForm {
           nome: car.nome,
           statusUsoId: car.statusUso?.id ?? 1,
           corId: car.cor?.id ?? 0,
+          marcaId: car.marca?.id ?? 0,
         }),
         error: () => this.errorMessage.set('Não foi possível carregar o carro.'),
       });
@@ -59,6 +63,7 @@ export class CarForm {
       nome: this.form.controls.nome.value.trim(),
       StatusUsoId: this.form.controls.statusUsoId.value,
       corId: this.form.controls.corId.value,
+      marcaId: this.form.controls.marcaId.value,
     };
     this.isSaving.set(true);
     const request$: Observable<Carro | void> = this.isEditing

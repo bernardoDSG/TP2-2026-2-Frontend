@@ -7,6 +7,7 @@ export interface Carro {
   id: number;
   nome: string;
   statusUso: CarStatus | null;
+  marca: { id: number; nome: string } | null;
   cor: {
     id: number;
     nome: string;
@@ -18,4 +19,5 @@ export interface CarroPayload {
   nome: string;
   StatusUsoId: number;
   corId: number;
+  marcaId: number;
 }
