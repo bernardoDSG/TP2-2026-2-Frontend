@@ -1,18 +1,16 @@
-export interface CarStatus {
-  id: number;
-  nome: string;
-}
-
 export interface Carro {
   id: number;
   nome: string;
-  statusUso: CarStatus | null;
-  marca: { id: number; nome: string } | null;
-  cor: {
-    id: number;
-    nome: string;
-    tonalidade?: { id: number; nome: string } | null;
-  } | null;
+  statusUso: 'SEMINOVO' | 'USADO';
+  nomeCarro: string;
+  statusUsoId: number;
+  marcaId: number;
+  marcaNome: string;
+  categoriaId: number;
+  categoriaNome: string;
+  corId: number;
+  corNome: string;
+  tonalidade: string;
 }
 
 export interface CarroPayload {
@@ -20,4 +18,5 @@ export interface CarroPayload {
   StatusUsoId: number;
   corId: number;
   marcaId: number;
+  categoriaId: number;
 }

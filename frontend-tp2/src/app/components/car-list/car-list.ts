@@ -2,9 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { RouterLink } from '@angular/router';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { EntityMenu } from '../entity-menu/entity-menu';
 import { Carro } from '../../models/car.model';
+import { StatusUso } from '../../models/status-uso.model';
 import { CarService } from '../../services/car.service';
 
 @Component({
@@ -17,28 +18,30 @@ export class CarList {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(CarService);
   private readonly catalogCars = signal<Carro[]>(this.route.snapshot.data['cars']);
+  protected readonly statuses = this.route.snapshot.data['statuses'] as StatusUso[];
   protected readonly cars = signal<Carro[]>(this.catalogCars());
   protected readonly nameFilter = signal('');
-  protected readonly colorFilter = signal('');
   protected readonly statusFilter = signal('');
+  protected readonly colorFilter = signal('');
   protected readonly brandFilter = signal('');
+  protected readonly categoryFilter = signal('');
   protected readonly itemsPerPage = signal(10);
   protected readonly currentPage = signal(1);
   protected readonly errorMessage = signal('');
   protected readonly availableColors = computed(() => {
     const colors = new Map<number, string>();
-    this.catalogCars().forEach((car) => { if (car.cor) colors.set(car.cor.id, car.cor.nome); });
+    this.catalogCars().forEach((car) => colors.set(car.corId, `${car.corNome} - ${car.tonalidade}`));
     return [...colors.entries()].map(([id, nome]) => ({ id, nome })).sort((first, second) => first.nome.localeCompare(second.nome));
-  });
-  protected readonly availableStatuses = computed(() => {
-    const statuses = new Map<number, string>();
-    this.catalogCars().forEach((car) => { if (car.statusUso) statuses.set(car.statusUso.id, car.statusUso.nome); });
-    return [...statuses.entries()].map(([id, nome]) => ({ id, nome })).sort((first, second) => first.nome.localeCompare(second.nome));
   });
   protected readonly availableBrands = computed(() => {
     const brands = new Map<number, string>();
-    this.catalogCars().forEach((car) => { if (car.marca) brands.set(car.marca.id, car.marca.nome); });
+    this.catalogCars().forEach((car) => brands.set(car.marcaId, car.marcaNome));
     return [...brands.entries()].map(([id, nome]) => ({ id, nome })).sort((first, second) => first.nome.localeCompare(second.nome));
+  });
+  protected readonly availableCategories = computed(() => {
+    const categories = new Map<number, string>();
+    this.catalogCars().forEach((car) => categories.set(car.categoriaId, car.categoriaNome));
+    return [...categories.entries()].map(([id, nome]) => ({ id, nome })).sort((first, second) => first.nome.localeCompare(second.nome));
   });
   protected readonly filteredCars = computed(() => this.cars());
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.cars().length / this.itemsPerPage())));
@@ -48,26 +51,30 @@ export class CarList {
   });
 
   protected setNameFilter(value: string): void { this.nameFilter.set(value); this.loadFilteredCars(); }
-  protected setColorFilter(value: string): void { this.colorFilter.set(value); this.loadFilteredCars(); }
   protected setStatusFilter(value: string): void { this.statusFilter.set(value); this.loadFilteredCars(); }
+  protected setColorFilter(value: string): void { this.colorFilter.set(value); this.loadFilteredCars(); }
   protected setBrandFilter(value: string): void { this.brandFilter.set(value); this.loadFilteredCars(); }
+  protected setCategoryFilter(value: string): void { this.categoryFilter.set(value); this.loadFilteredCars(); }
   protected setItemsPerPage(value: string): void { this.itemsPerPage.set(Number(value)); this.currentPage.set(1); }
   protected previousPage(): void { this.currentPage.update((page) => Math.max(1, page - 1)); }
   protected nextPage(): void { this.currentPage.update((page) => Math.min(this.totalPages(), page + 1)); }
   private loadFilteredCars(): void {
     this.currentPage.set(1);
-    const requests: Observable<Carro[]>[] = [];
     const name = this.nameFilter().trim();
-    if (name) requests.push(this.service.findByName(name));
-    if (this.colorFilter()) requests.push(this.service.findByColor(Number(this.colorFilter())));
-    if (this.statusFilter()) requests.push(this.service.findByStatus(Number(this.statusFilter())));
-    if (this.brandFilter()) requests.push(this.service.findByBrand(Number(this.brandFilter())));
-
-    if (!requests.length) {
+    const statusId = this.statusFilter();
+    const colorId = this.colorFilter();
+    const brandId = this.brandFilter();
+    const categoryId = this.categoryFilter();
+    if (!name && !statusId && !colorId && !brandId && !categoryId) {
       this.cars.set(this.catalogCars());
       return;
     }
-
+    const requests = [];
+    if (name) requests.push(this.service.findByName(name));
+    if (statusId) requests.push(this.service.findByStatus(Number(statusId)));
+    if (colorId) requests.push(this.service.findByColor(Number(colorId)));
+    if (brandId) requests.push(this.service.findByBrand(Number(brandId)));
+    if (categoryId) requests.push(this.service.findByCategory(Number(categoryId)));
     forkJoin(requests).subscribe({
       next: (results) => {
         const matchingIds = results.slice(1).reduce((ids, result) => {
@@ -79,12 +86,8 @@ export class CarList {
       error: () => this.errorMessage.set('Não foi possível aplicar os filtros de carros.'),
     });
   }
-  protected statusName(car: Carro): string { return car.statusUso?.nome ?? 'Sem status'; }
-  protected brandName(car: Carro): string { return car.marca?.nome ?? 'Sem marca'; }
-  protected colorLabel(car: Carro): string {
-    const color = car.cor;
-    if (!color) return 'Sem cor';
-    const tone = color.tonalidade?.nome;
-    return tone ? `${color.nome} - ${tone}` : color.nome;
+  protected statusName(car: Carro): string {
+    return this.statuses.find((status) => status.nome.toUpperCase() === car.statusUso)?.nome ?? car.statusUso;
   }
+  protected colorLabel(car: Carro): string { return `${car.corNome} - ${car.tonalidade}`; }
 }

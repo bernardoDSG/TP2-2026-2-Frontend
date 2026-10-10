@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize, firstValueFrom, from, of, switchMap, tap } from 'rxjs';
+import { finalize, firstValueFrom, forkJoin, from, of, switchMap, tap } from 'rxjs';
 import { Estado, Municipio } from '../../models/address-catalog.model';
 import { ClienteEndereco, ClientePayload, EnderecoPayload } from '../../models/cliente.model';
 import { CepAddress, CepService } from '../../services/cep.service';
@@ -61,36 +61,42 @@ export class CustomerForm {
 
   protected get addresses() { return this.form.controls.enderecos; }
 
-  private createAddressForm(address?: ClienteEndereco) {
+  private createAddressForm(address?: ClienteEndereco, estadoId = 0) {
     return this.formBuilder.nonNullable.group({
       cep: [address?.cep ?? '', [Validators.required, digitsLengthValidator(8, 8)]],
       logradouro: [address?.logradouro ?? '', [Validators.required, Validators.maxLength(160)]],
       numero: [address?.numero ?? '', [Validators.required, Validators.maxLength(20)]],
       complemento: [address?.complemento ?? '', Validators.maxLength(100)],
       bairro: [address?.bairro ?? '', [Validators.required, Validators.maxLength(100)]],
-      estadoId: [address?.municipio.estado.id ?? 0, [Validators.required, Validators.min(1)]],
-      municipioId: [address?.municipio.id ?? 0, [Validators.required, Validators.min(1)]],
+      estadoId: [estadoId, [Validators.required, Validators.min(1)]],
+      municipioId: [address?.municipioId ?? 0, [Validators.required, Validators.min(1)]],
     });
   }
 
   constructor() {
-    this.estadoService.getAll().subscribe({
-      next: (estados) => this.estados.set(estados),
-      error: () => this.errorMessage.set('Não foi possível carregar os estados cadastrados.'),
-    });
-    this.municipioService.getAll().subscribe({
-      next: (municipios) => this.municipios.set(municipios),
-      error: () => this.errorMessage.set('Não foi possível carregar os municípios cadastrados.'),
-    });
-    if (this.isEditing) {
-      this.customers.getById(this.id).subscribe({
-        next: (cliente) => {
+    forkJoin({
+      estados: this.estadoService.getAll(),
+      municipios: this.municipioService.getAll(),
+      cliente: this.isEditing ? this.customers.getById(this.id) : of(null),
+    }).subscribe({
+      next: ({ estados, municipios, cliente }) => {
+        this.estados.set(estados);
+        this.municipios.set(municipios);
+        if (cliente) {
           this.form.patchValue({ nome: cliente.nome, cpf: cliente.cpf, email: cliente.email, telefone: cliente.telefone });
-          this.form.setControl('enderecos', this.formBuilder.array(cliente.enderecos.map((address) => this.createAddressForm(address))));
-        },
-        error: () => this.errorMessage.set('Não foi possível carregar o cliente.'),
-      });
-    }
+          this.form.setControl('enderecos', this.formBuilder.array(cliente.enderecos.map((address) => {
+            const municipio = municipios.find((item) => item.id === address.municipioId);
+            const estadoId = municipio?.estadoId
+              ?? estados.find((item) => item.sigla.toLocaleLowerCase('pt-BR') === address.estadoSigla.toLocaleLowerCase('pt-BR'))?.id
+              ?? 0;
+            return this.createAddressForm(address, estadoId);
+          })));
+        }
+      },
+      error: () => this.errorMessage.set(this.isEditing
+        ? 'Não foi possível carregar o cliente e os dados dos endereços.'
+        : 'Não foi possível carregar os estados e municípios cadastrados.'),
+    });
   }
 
   protected addAddress(): void {
@@ -102,7 +108,7 @@ export class CustomerForm {
   }
 
   protected municipiosForState(estadoId: number | string): Municipio[] {
-    return this.municipios().filter((municipio) => Number(municipio.estado.id) === Number(estadoId));
+    return this.municipios().filter((municipio) => Number(municipio.estadoId) === Number(estadoId));
   }
 
   protected setAddressState(index: number, value: string): void {
@@ -162,7 +168,7 @@ export class CustomerForm {
     }
 
     let municipio = this.municipios().find((item) =>
-      item.estado.id === estado!.id && item.nome.localeCompare(nomeMunicipio, undefined, { sensitivity: 'base' }) === 0,
+      item.estadoId === estado!.id && item.nome.localeCompare(nomeMunicipio, undefined, { sensitivity: 'base' }) === 0,
     );
     if (!municipio) {
       try {
@@ -172,7 +178,7 @@ export class CustomerForm {
         const municipios = await firstValueFrom(this.municipioService.getAll());
         this.municipios.set(municipios);
         municipio = municipios.find((item) =>
-          item.estado.id === estado!.id && item.nome.localeCompare(nomeMunicipio, undefined, { sensitivity: 'base' }) === 0,
+          item.estadoId === estado!.id && item.nome.localeCompare(nomeMunicipio, undefined, { sensitivity: 'base' }) === 0,
         );
         if (!municipio) throw error;
       }

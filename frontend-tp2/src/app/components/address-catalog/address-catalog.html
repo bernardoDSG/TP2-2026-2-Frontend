@@ -19,7 +19,7 @@
           } @else {
             <table><thead><tr><th>Município</th><th>Estado</th><th class="actions-heading">Ações</th></tr></thead><tbody>
               @for (municipio of municipios(); track municipio.id) {
-                <tr><td>{{ municipio.nome }}</td><td>{{ municipio.estado.nome }} ({{ municipio.estado.sigla }})</td><td><div class="row-actions"><a [routerLink]="['/enderecos/municipios/editar', municipio.id]" aria-label="Editar município" title="Editar"><span class="material-symbol">edit</span></a><a [routerLink]="['/enderecos/municipios/excluir', municipio.id]" aria-label="Excluir município" title="Excluir"><span class="material-symbol">delete</span></a></div></td></tr>
+                <tr><td>{{ municipio.nome }}</td><td>{{ municipio.estadoNome }} ({{ municipio.estadoSigla }})</td><td><div class="row-actions"><a [routerLink]="['/enderecos/municipios/editar', municipio.id]" aria-label="Editar município" title="Editar"><span class="material-symbol">edit</span></a><a [routerLink]="['/enderecos/municipios/excluir', municipio.id]" aria-label="Excluir município" title="Excluir"><span class="material-symbol">delete</span></a></div></td></tr>
               } @empty {<tr><td colspan="3" class="empty-state"><strong>Nenhum município cadastrado</strong></td></tr>}
             </tbody></table>
           }

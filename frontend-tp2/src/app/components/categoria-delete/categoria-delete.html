@@ -1,0 +1,24 @@
+<main class="admin-shell">
+  <app-entity-menu />
+  <section class="content-area">
+    <header class="topbar"><div><strong>Excluir categoria</strong></div></header>
+    <div class="content-inner">
+      <section class="page-heading"><div><h1>Excluir categoria</h1></div></section>
+      <aside class="editor delete-panel">
+        <span class="material-symbol delete-large">delete_forever</span>
+        <h2>Confirmar exclusão</h2>
+        <p>Deseja realmente excluir <strong>{{ categoria()?.nome ?? 'esta categoria' }}</strong>?</p>
+        @if (linkedCars().length > 0) {
+          <p>{{ linkedCars().length }} carro(s) serão transferidos para a categoria substituta escolhida.</p>
+          @if (replacementCategorias().length > 0) {
+            <label class="form-field select-field"><span>Substituir por</span><select [value]="replacementCategoriaId() ?? ''" (change)="setReplacementCategoria($any($event.target).value)"><option value="">Selecione uma categoria</option>@for (replacement of replacementCategorias(); track replacement.id) {<option [value]="replacement.id">{{ replacement.nome }}</option>}</select></label>
+          } @else {
+            <p>Cadastre outra categoria antes de excluir esta.</p>
+          }
+        }
+        @if (errorMessage()) {<p class="field-error" role="alert">{{ errorMessage() }}</p>}
+        <div class="form-actions"><a class="text-button" routerLink="/categorias">Cancelar</a><button class="delete-button" type="button" (click)="remove()" [disabled]="isDeleting() || (linkedCars().length > 0 && replacementCategoriaId() === null)">{{ isDeleting() ? 'Excluindo...' : 'Excluir categoria' }}</button></div>
+      </aside>
+    </div>
+  </section>
+</main>

@@ -19,7 +19,7 @@
                   <td><div class="vehicle-cell"><strong>{{ customer.nome }}</strong></div></td>
                   <td class="muted-cell">{{ customer.cpf }}</td>
                   <td>{{ customer.email }}<br /><small>{{ customer.telefone }}</small></td>
-                  <td>{{ customer.enderecos[0]?.municipio?.nome }} / {{ customer.enderecos[0]?.municipio?.estado?.sigla }}<br /><small>{{ customer.enderecos.length }} endereço(s)</small></td>
+                  <td>{{ customer.enderecos[0]?.municipioNome }} / {{ customer.enderecos[0]?.estadoSigla }}<br /><small>{{ customer.enderecos.length }} endereço(s)</small></td>
                   <td><div class="row-actions">
                     <a [routerLink]="['/clientes/editar', customer.id]" aria-label="Editar cliente" title="Editar"><span class="material-symbol">edit</span></a>
                     <a [routerLink]="['/clientes/excluir', customer.id]" aria-label="Excluir cliente" title="Excluir"><span class="material-symbol">delete</span></a>

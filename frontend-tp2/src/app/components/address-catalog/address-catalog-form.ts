@@ -46,7 +46,7 @@ export class AddressCatalogForm {
         });
       } else {
         this.municipioService.getById(this.id).subscribe({
-          next: (municipio) => this.form.patchValue({ nome: municipio.nome, estadoId: municipio.estado.id }),
+          next: (municipio) => this.form.patchValue({ nome: municipio.nome, estadoId: municipio.estadoId }),
           error: () => this.errorMessage.set('Não foi possível carregar o município.'),
         });
       }

@@ -22,11 +22,9 @@ export interface ClienteEndereco {
   numero: string;
   complemento: string | null;
   bairro: string;
-  municipio: {
-    id: number;
-    nome: string;
-    estado: { id: number; nome: string; sigla: string };
-  };
+  municipioId: number;
+  municipioNome: string;
+  estadoSigla: string;
 }
 
 export interface Cliente {

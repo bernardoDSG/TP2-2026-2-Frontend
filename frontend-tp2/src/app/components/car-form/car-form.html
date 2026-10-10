@@ -10,9 +10,10 @@
         <div class="editor-heading"><div><h2>Dados do carro</h2></div></div>
         <form class="car-form" [formGroup]="form" (ngSubmit)="save()">
           <label class="form-field"><span>Nome do carro</span><input formControlName="nome" /></label>
-          <label class="form-field select-field"><span>Status de uso</span><select formControlName="statusUsoId"><option [ngValue]="1">Seminovo</option><option [ngValue]="2">Usado</option></select></label>
+          <label class="form-field select-field"><span>Status de uso</span><select formControlName="statusUsoId"><option [ngValue]="0" disabled>Selecione um status</option>@for (statusUso of statuses; track statusUso.id) {<option [ngValue]="statusUso.id">{{ statusUso.nome }}</option>}</select></label>
           <label class="form-field select-field"><span>Cor do carro</span><select formControlName="corId"><option [ngValue]="0" disabled>Selecione uma cor</option>@for (color of colors; track color.id) {<option [ngValue]="color.id">{{ colorLabel(color) }}</option>}</select></label>
           <label class="form-field select-field"><span>Marca do carro</span><select formControlName="marcaId"><option [ngValue]="0" disabled>Selecione uma marca</option>@for (marca of marcas; track marca.id) {<option [ngValue]="marca.id">{{ marca.nome }}</option>}</select></label>
+          <label class="form-field select-field"><span>Categoria do carro</span><select formControlName="categoriaId"><option [ngValue]="0" disabled>Selecione uma categoria</option>@for (categoria of categorias; track categoria.id) {<option [ngValue]="categoria.id">{{ categoria.nome }}</option>}</select></label>
           @if (form.controls.nome.invalid && form.controls.nome.touched) {<small class="field-error">Digite pelo menos 2 caracteres.</small>}
           @if (errorMessage()) {<small class="field-error">{{ errorMessage() }}</small>}
           <div class="form-actions"><a class="text-button" routerLink="/carros">Cancelar</a><button class="save-button" type="submit" [disabled]="isSaving()">{{ isSaving() ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Cadastrar carro' }} <span>→</span></button></div>

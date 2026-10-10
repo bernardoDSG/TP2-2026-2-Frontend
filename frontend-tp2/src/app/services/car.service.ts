@@ -32,6 +32,10 @@ export class CarService {
     return this.http.get<Carro[]>(`${this.apiUrl}/marca/${brandId}`, { params: { page, pageSize } });
   }
 
+  findByCategory(categoryId: number, page = 0, pageSize = 100): Observable<Carro[]> {
+    return this.http.get<Carro[]>(`${this.apiUrl}/categoria/${categoryId}`, { params: { page, pageSize } });
+  }
+
   create(carro: CarroPayload): Observable<Carro> {
     return this.http.post<Carro>(this.apiUrl, carro);
   }

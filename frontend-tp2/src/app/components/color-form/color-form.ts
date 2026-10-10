@@ -29,7 +29,14 @@ export class ColorForm {
   constructor() {
     if (this.isEditing) {
       this.service.getById(this.id).subscribe({
-        next: (color) => this.form.setValue({ nome: color.nome, tonalidadeId: this.toneId(color) }),
+        next: (color) => {
+          const tonalidadeId = this.toneId(color.tonalidade);
+          if (tonalidadeId === null) {
+            this.errorMessage.set('A tonalidade retornada pela API não é reconhecida.');
+            return;
+          }
+          this.form.setValue({ nome: color.nome, tonalidadeId });
+        },
         error: () => this.errorMessage.set('Não foi possível carregar a cor.'),
       });
     }
@@ -54,8 +61,8 @@ export class ColorForm {
     });
   }
 
-  private toneId(color: Color): number {
-    const tone = color.tonalidade as (Color['tonalidade'] & { ID?: number }) | null;
-    return tone?.id ?? tone?.ID ?? 1;
+  private toneId(tonalidade: Color['tonalidade']): number | null {
+    const toneIds: Record<string, number> = { claro: 1, escuro: 2, puro: 3 };
+    return toneIds[tonalidade.trim().toLocaleLowerCase('pt-BR')] ?? null;
   }
 }

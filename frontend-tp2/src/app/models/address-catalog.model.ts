@@ -12,7 +12,9 @@ export interface EstadoPayload {
 export interface Municipio {
   id: number;
   nome: string;
-  estado: Estado;
+  estadoId: number;
+  estadoNome: string;
+  estadoSigla: string;
 }
 
 export interface MunicipioPayload {

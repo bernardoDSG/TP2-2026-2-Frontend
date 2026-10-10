@@ -8,6 +8,9 @@ import { ColorForm } from './components/color-form/color-form';
 import { MarcaDelete } from './components/marca-delete/marca-delete';
 import { MarcaForm } from './components/marca-form/marca-form';
 import { MarcaList } from './components/marca-list/marca-list';
+import { CategoriaDelete } from './components/categoria-delete/categoria-delete';
+import { CategoriaForm } from './components/categoria-form/categoria-form';
+import { CategoriaList } from './components/categoria-list/categoria-list';
 import { CustomerList } from './components/customer-list/customer-list';
 import { CustomerForm } from './components/customer-form/customer-form';
 import { CustomerDelete } from './components/customer-delete/customer-delete';
@@ -17,12 +20,14 @@ import { AddressCatalogDelete } from './components/address-catalog/address-catal
 import { carsResolver } from './resolvers/cars.resolver';
 import { colorsResolver } from './resolvers/colors.resolver';
 import { marcasResolver } from './resolvers/marcas.resolver';
+import { statusUsosResolver } from './resolvers/status-usos.resolver';
+import { categoriasResolver } from './resolvers/categorias.resolver';
 
 export const routes: Routes = [
 	{ path: '', redirectTo: 'carros', pathMatch: 'full' },
-	{ path: 'carros', component: CarList, resolve: { cars: carsResolver } },
-	{ path: 'carros/cadastro', component: CarForm, resolve: { colors: colorsResolver, marcas: marcasResolver } },
-	{ path: 'carros/editar/:id', component: CarForm, resolve: { colors: colorsResolver, marcas: marcasResolver } },
+	{ path: 'carros', component: CarList, resolve: { cars: carsResolver, statuses: statusUsosResolver } },
+	{ path: 'carros/cadastro', component: CarForm, resolve: { colors: colorsResolver, marcas: marcasResolver, categorias: categoriasResolver, statuses: statusUsosResolver } },
+	{ path: 'carros/editar/:id', component: CarForm, resolve: { colors: colorsResolver, marcas: marcasResolver, categorias: categoriasResolver, statuses: statusUsosResolver } },
 	{ path: 'carros/excluir/:id', component: CarDelete },
 	{ path: 'clientes', component: CustomerList },
 	{ path: 'clientes/cadastro', component: CustomerForm },
@@ -36,6 +41,10 @@ export const routes: Routes = [
 	{ path: 'marcas/cadastro', component: MarcaForm },
 	{ path: 'marcas/editar/:id', component: MarcaForm },
 	{ path: 'marcas/excluir/:id', component: MarcaDelete },
+	{ path: 'categorias', component: CategoriaList },
+	{ path: 'categorias/cadastro', component: CategoriaForm },
+	{ path: 'categorias/editar/:id', component: CategoriaForm },
+	{ path: 'categorias/excluir/:id', component: CategoriaDelete },
 	{ path: 'enderecos/:kind/cadastro', component: AddressCatalogForm },
 	{ path: 'enderecos/:kind/editar/:id', component: AddressCatalogForm },
 	{ path: 'enderecos/:kind/excluir/:id', component: AddressCatalogDelete },

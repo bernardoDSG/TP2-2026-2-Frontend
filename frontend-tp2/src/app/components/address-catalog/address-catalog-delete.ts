@@ -32,7 +32,7 @@ export class AddressCatalogDelete {
       });
     } else {
       this.municipioService.getById(this.id).subscribe({
-        next: (municipio) => { this.name.set(municipio.nome); this.detail.set(`${municipio.estado.nome} (${municipio.estado.sigla})`); },
+        next: (municipio) => { this.name.set(municipio.nome); this.detail.set(`${municipio.estadoNome} (${municipio.estadoSigla})`); },
         error: () => this.errorMessage.set('Não foi possível carregar o município.'),
       });
     }
