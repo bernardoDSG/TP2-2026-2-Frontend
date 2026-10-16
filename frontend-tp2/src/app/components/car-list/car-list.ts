@@ -12,7 +12,7 @@ import { CarService } from '../../services/car.service';
   selector: 'app-car-list',
   imports: [CommonModule, RouterLink, EntityMenu],
   templateUrl: './car-list.html',
-  styleUrl: '../task-board/task-board.css',
+  styleUrls: ['../task-board/task-board.css', './car-list.css'],
 })
 export class CarList {
   private readonly route = inject(ActivatedRoute);
@@ -28,6 +28,7 @@ export class CarList {
   protected readonly itemsPerPage = signal(10);
   protected readonly currentPage = signal(1);
   protected readonly errorMessage = signal('');
+  private readonly unavailableImages = signal<Set<number>>(new Set());
   protected readonly availableColors = computed(() => {
     const colors = new Map<number, string>();
     this.catalogCars().forEach((car) => colors.set(car.corId, `${car.corNome} - ${car.tonalidade}`));
@@ -90,4 +91,8 @@ export class CarList {
     return this.statuses.find((status) => status.nome.toUpperCase() === car.statusUso)?.nome ?? car.statusUso;
   }
   protected colorLabel(car: Carro): string { return `${car.corNome} - ${car.tonalidade}`; }
+  protected hasImage(car: Carro): boolean { return car.imagemUrl !== null && !this.unavailableImages().has(car.id); }
+  protected markImageUnavailable(carId: number): void {
+    this.unavailableImages.update((ids) => new Set(ids).add(carId));
+  }
 }

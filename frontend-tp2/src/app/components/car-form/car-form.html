@@ -14,6 +14,22 @@
           <label class="form-field select-field"><span>Cor do carro</span><select formControlName="corId"><option [ngValue]="0" disabled>Selecione uma cor</option>@for (color of colors; track color.id) {<option [ngValue]="color.id">{{ colorLabel(color) }}</option>}</select></label>
           <label class="form-field select-field"><span>Marca do carro</span><select formControlName="marcaId"><option [ngValue]="0" disabled>Selecione uma marca</option>@for (marca of marcas; track marca.id) {<option [ngValue]="marca.id">{{ marca.nome }}</option>}</select></label>
           <label class="form-field select-field"><span>Categoria do carro</span><select formControlName="categoriaId"><option [ngValue]="0" disabled>Selecione uma categoria</option>@for (categoria of categorias; track categoria.id) {<option [ngValue]="categoria.id">{{ categoria.nome }}</option>}</select></label>
+          <section class="car-image-upload">
+            <span class="image-upload-label">Foto do carro</span>
+            <div class="car-image-preview">
+              @if (imagePreviewUrl()) {
+                <img [src]="imagePreviewUrl()" alt="Prévia da foto selecionada" />
+              } @else if (currentImageUrl() && !removeCurrentImage() && !imageUnavailable()) {
+                <img [src]="'http://localhost:8080' + currentImageUrl()" alt="Foto atual do carro" (error)="markImageUnavailable()" />
+              } @else {
+                <span class="material-symbol">directions_car</span>
+              }
+            </div>
+            <label class="image-file-picker">Escolher imagem<input type="file" accept="image/jpeg,image/png,image/gif,image/webp" (change)="chooseImage($event)" /></label>
+            <small class="field-info">JPEG, PNG, GIF ou WebP · até 5 MB</small>
+            @if (currentImageUrl() && !removeCurrentImage()) {<button class="text-button" type="button" (click)="toggleRemoveImage()">Remover foto atual</button>}
+            @if (removeCurrentImage()) {<button class="text-button" type="button" (click)="toggleRemoveImage()">Manter foto atual</button>}
+          </section>
           @if (form.controls.nome.invalid && form.controls.nome.touched) {<small class="field-error">Digite pelo menos 2 caracteres.</small>}
           @if (errorMessage()) {<small class="field-error">{{ errorMessage() }}</small>}
           <div class="form-actions"><a class="text-button" routerLink="/carros">Cancelar</a><button class="save-button" type="submit" [disabled]="isSaving()">{{ isSaving() ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Cadastrar carro' }} <span>→</span></button></div>

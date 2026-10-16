@@ -1,0 +1,45 @@
+<main class="admin-shell">
+  <app-entity-menu />
+  <section class="content-area">
+    <header class="topbar"><div><strong>Detalhes do carro</strong></div></header>
+    <div class="content-inner">
+      <section class="page-heading">
+        <div><p class="eyebrow">Inventário / Carros</p><h1>Detalhes do carro</h1></div>
+        <a class="primary-button" routerLink="/carros">Voltar para carros</a>
+      </section>
+      @if (isLoading()) {
+        <section class="detail-panel" aria-live="polite">Carregando dados do carro...</section>
+      } @else if (car(); as vehicle) {
+        <section class="detail-panel">
+          <div class="detail-photo">
+            @if (vehicle.imagemUrl && !imageUnavailable()) {
+              <img [src]="'http://localhost:8080' + vehicle.imagemUrl" [alt]="'Foto de ' + vehicle.nome" (error)="markImageUnavailable()" />
+            } @else {
+              <span class="material-symbol" aria-label="Foto indisponível">directions_car</span>
+            }
+          </div>
+          <div class="detail-information">
+            <p class="eyebrow">Veículo #{{ vehicle.id }}</p>
+            <h2>{{ vehicle.nome }}</h2>
+            <dl class="detail-fields">
+              <div><dt>Marca</dt><dd>{{ vehicle.marcaNome }}</dd></div>
+              <div><dt>Modelo</dt><dd>{{ vehicle.nomeCarro }}</dd></div>
+              <div><dt>Categoria</dt><dd>{{ vehicle.categoriaNome }}</dd></div>
+              <div><dt>Cor</dt><dd>{{ vehicle.corNome }} - {{ vehicle.tonalidade }}</dd></div>
+              <div><dt>Status de uso</dt><dd><span class="status-pill" [class.used]="vehicle.statusUso === 'USADO'"><span></span>{{ statusName(vehicle.statusUso) }}</span></dd></div>
+            </dl>
+            <div class="detail-actions">
+              <a class="primary-button" [routerLink]="['/carros/editar', vehicle.id]">Editar carro</a>
+              <a class="secondary-button" [routerLink]="['/carros/excluir', vehicle.id]">Excluir carro</a>
+            </div>
+          </div>
+        </section>
+      } @else {
+        <section class="detail-panel detail-error" role="alert">
+          <p>{{ errorMessage() }}</p>
+          <a class="primary-button" routerLink="/carros">Voltar para carros</a>
+        </section>
+      }
+    </div>
+  </section>
+</main>

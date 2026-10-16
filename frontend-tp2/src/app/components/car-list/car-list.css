@@ -1,0 +1,10 @@
+.vehicle-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.vehicle-link:hover strong,
+.vehicle-link:focus-visible strong {
+  color: var(--blue);
+  text-decoration: underline;
+}

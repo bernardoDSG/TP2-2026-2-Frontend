@@ -11,6 +11,7 @@ export interface Carro {
   corId: number;
   corNome: string;
   tonalidade: string;
+  imagemUrl: string | null;
 }
 
 export interface CarroPayload {

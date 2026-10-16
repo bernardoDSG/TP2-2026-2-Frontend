@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { CarDelete } from './components/car-delete/car-delete';
+import { CarDetails } from './components/car-details/car-details';
 import { CarForm } from './components/car-form/car-form';
 import { CarList } from './components/car-list/car-list';
 import { ColorBoard } from './components/color-board/color-board';
@@ -28,6 +29,7 @@ export const routes: Routes = [
 	{ path: '', redirectTo: 'carros', pathMatch: 'full' },
 	{ path: 'carros', component: CarList, resolve: { cars: carsResolver, statuses: statusUsosResolver } },
 	{ path: 'carros/cadastro', component: CarForm, resolve: { colors: colorsResolver, marcas: marcasResolver, categorias: categoriasResolver, statuses: statusUsosResolver } },
+	{ path: 'carros/detalhes/:id', component: CarDetails },
 	{ path: 'carros/editar/:id', component: CarForm, resolve: { colors: colorsResolver, marcas: marcasResolver, categorias: categoriasResolver, statuses: statusUsosResolver } },
 	{ path: 'carros/excluir/:id', component: CarDelete },
 	{ path: 'clientes', component: CustomerList },

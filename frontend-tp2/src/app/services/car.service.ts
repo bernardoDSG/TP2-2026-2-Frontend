@@ -40,6 +40,16 @@ export class CarService {
     return this.http.post<Carro>(this.apiUrl, carro);
   }
 
+  uploadImage(id: number, image: File): Observable<void> {
+    const data = new FormData();
+    data.append('imagem', image, image.name);
+    return this.http.post<void>(`${this.apiUrl}/${id}/imagem`, data);
+  }
+
+  deleteImage(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}/imagem`);
+  }
+
   update(id: number, carro: CarroPayload): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${id}`, carro);
   }

@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnDestroy, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize, Observable } from 'rxjs';
+import { finalize, Observable, of, switchMap } from 'rxjs';
 import { Carro, CarroPayload } from '../../models/car.model';
 import { Categoria } from '../../models/categoria.model';
 import { Color } from '../../models/color.model';
@@ -15,9 +15,9 @@ import { EntityMenu } from '../entity-menu/entity-menu';
   selector: 'app-car-form',
   imports: [CommonModule, ReactiveFormsModule, RouterLink, EntityMenu],
   templateUrl: './car-form.html',
-  styleUrl: '../task-board/task-board.css',
+  styleUrls: ['../task-board/task-board.css', './car-form.css'],
 })
-export class CarForm {
+export class CarForm implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly service = inject(CarService);
@@ -27,6 +27,11 @@ export class CarForm {
   protected readonly isEditing = this.id > 0;
   protected readonly isSaving = signal(false);
   protected readonly errorMessage = signal('');
+  protected readonly currentImageUrl = signal<string | null>(null);
+  protected readonly imagePreviewUrl = signal<string | null>(null);
+  protected readonly imageUnavailable = signal(false);
+  protected readonly selectedImage = signal<File | null>(null);
+  protected readonly removeCurrentImage = signal(false);
   protected readonly colors = this.route.snapshot.data['colors'] as Color[];
   protected readonly marcas = this.route.snapshot.data['marcas'] as Marca[];
   protected readonly categorias = this.route.snapshot.data['categorias'] as Categoria[];
@@ -42,13 +47,16 @@ export class CarForm {
   constructor() {
     if (this.isEditing) {
       this.service.getById(this.id).subscribe({
-        next: (car) => this.form.setValue({
-          nome: car.nomeCarro,
-          statusUsoId: car.statusUsoId,
-          corId: car.corId,
-          marcaId: car.marcaId,
-          categoriaId: car.categoriaId,
-        }),
+        next: (car) => {
+          this.form.setValue({
+            nome: car.nomeCarro,
+            statusUsoId: car.statusUsoId,
+            corId: car.corId,
+            marcaId: car.marcaId,
+            categoriaId: car.categoriaId,
+          });
+          this.currentImageUrl.set(car.imagemUrl);
+        },
         error: () => this.errorMessage.set('Não foi possível carregar o carro.'),
       });
     }
@@ -56,6 +64,42 @@ export class CarForm {
 
   protected colorLabel(color: Color): string {
     return `${color.nome} - ${color.tonalidade}`;
+  }
+
+  ngOnDestroy(): void {
+    const previewUrl = this.imagePreviewUrl();
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  }
+
+  protected chooseImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    if (this.imagePreviewUrl()) URL.revokeObjectURL(this.imagePreviewUrl()!);
+    this.imagePreviewUrl.set(null);
+    this.selectedImage.set(null);
+    this.errorMessage.set('');
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
+      this.errorMessage.set('Escolha uma imagem JPEG, PNG, GIF ou WebP.');
+      input.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.errorMessage.set('A imagem deve ter no máximo 5 MB.');
+      input.value = '';
+      return;
+    }
+    this.selectedImage.set(file);
+    this.imagePreviewUrl.set(URL.createObjectURL(file));
+    this.removeCurrentImage.set(false);
+  }
+
+  protected markImageUnavailable(): void {
+    this.imageUnavailable.set(true);
+  }
+
+  protected toggleRemoveImage(): void {
+    this.removeCurrentImage.update((remove) => !remove);
   }
 
   protected save(): void {
@@ -72,12 +116,23 @@ export class CarForm {
       categoriaId: this.form.controls.categoriaId.value,
     };
     this.isSaving.set(true);
-    const request$: Observable<Carro | void> = this.isEditing
-      ? this.service.update(this.id, payload)
-      : this.service.create(payload);
+    let request$: Observable<void>;
+    if (this.isEditing) {
+      request$ = this.service.update(this.id, payload).pipe(switchMap(() => this.saveImage(this.id)));
+    } else {
+      request$ = this.service.create(payload).pipe(switchMap((car) => this.saveImage(car.id)));
+    }
     request$.pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: () => this.router.navigateByUrl('/carros'),
-      error: () => this.errorMessage.set('Não foi possível salvar o carro.'),
+      error: (error: { status?: number }) => this.errorMessage.set(
+        error.status === 400 ? 'A imagem não é válida. Envie JPEG, PNG, GIF ou WebP com até 5 MB.' : 'Não foi possível salvar o carro.',
+      ),
     });
+  }
+
+  private saveImage(carId: number): Observable<void> {
+    if (this.selectedImage()) return this.service.uploadImage(carId, this.selectedImage()!);
+    if (this.isEditing && this.removeCurrentImage()) return this.service.deleteImage(carId);
+    return of(undefined);
   }
 }
