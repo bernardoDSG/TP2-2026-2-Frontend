@@ -22,6 +22,7 @@ import { colorsResolver } from './resolvers/colors.resolver';
 import { marcasResolver } from './resolvers/marcas.resolver';
 import { statusUsosResolver } from './resolvers/status-usos.resolver';
 import { categoriasResolver } from './resolvers/categorias.resolver';
+import { YardMap } from './components/yard-map/yard-map';
 
 export const routes: Routes = [
 	{ path: '', redirectTo: 'carros', pathMatch: 'full' },
@@ -50,5 +51,6 @@ export const routes: Routes = [
 	{ path: 'enderecos/:kind/excluir/:id', component: AddressCatalogDelete },
 	{ path: 'enderecos/:kind', component: AddressCatalog },
 	{ path: 'enderecos', redirectTo: 'enderecos/estados', pathMatch: 'full' },
+	{ path: 'patio', component: YardMap },
 	{ path: '**', redirectTo: 'carros' },
 ];

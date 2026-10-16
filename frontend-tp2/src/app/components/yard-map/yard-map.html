@@ -1,0 +1,89 @@
+<main class="admin-shell">
+  <app-entity-menu />
+  <section class="content-area">
+    <header class="topbar"><div><strong>Mapa do pátio</strong></div></header>
+    <div class="content-inner yard-content">
+      <section class="page-heading">
+        <div><p class="eyebrow">SGL · ESTOQUE</p><h1>Mapa do pátio</h1><p>Localize rapidamente cada veículo por setor e vaga.</p></div>
+        <button class="primary-button" type="button" (click)="beginNewSector()">+ Cadastrar setor</button>
+      </section>
+
+      @if (errorMessage()) { <p class="yard-alert" role="alert">{{ errorMessage() }}</p> }
+      @if (successMessage()) { <p class="yard-success" role="status">{{ successMessage() }}</p> }
+
+      @if (showSectorForm()) {
+        <section class="yard-panel sector-editor">
+          <div class="yard-panel-heading"><div><h2>{{ isEditingSector() ? 'Editar setor' : 'Novo setor' }}</h2><p>Informe as dimensões do mapa em linhas e colunas.</p></div></div>
+          <form class="yard-form sector-form" [formGroup]="sectorForm" (ngSubmit)="saveSector()">
+            <label class="form-field"><span>Nome do setor</span><input formControlName="nome" maxlength="80" placeholder="Ex.: Setor D" /></label>
+            <label class="form-field"><span>Linhas</span><input formControlName="linhas" type="number" min="1" max="50" /></label>
+            <label class="form-field"><span>Colunas</span><input formControlName="colunas" type="number" min="1" max="50" /></label>
+            <div class="yard-form-actions"><button class="save-button" type="submit" [disabled]="isSaving()">Salvar setor</button><button class="subtle-button" type="button" (click)="cancelSectorForm()">Cancelar</button></div>
+          </form>
+        </section>
+      }
+
+      <section class="yard-metrics">
+        <article class="yard-metric"><span>Setores</span><strong>{{ sectors().length }}</strong></article>
+        <article class="yard-metric"><span>Vagas no setor</span><strong>{{ sectorSlots().length }}</strong></article>
+        <article class="yard-metric"><span>Ocupadas</span><strong>{{ occupiedCount() }}</strong></article>
+        <article class="yard-metric"><span>Livres</span><strong>{{ sectorSlots().length - occupiedCount() }}</strong></article>
+      </section>
+
+      <section class="yard-panel">
+        <div class="yard-panel-heading sector-toolbar">
+          <div><h2>Setores do pátio</h2><p>Selecione um setor para visualizar suas vagas.</p></div>
+          @if (sectors().length > 0) {
+            <div class="sector-actions">
+              <label class="sector-select"><span>Setor ativo</span><select [value]="selectedSectorId()" (change)="selectSector($any($event.target).value)">@for (sector of sectors(); track sector.id) {<option [value]="sector.id">{{ sector.nome }}</option>}</select></label>
+              <button class="subtle-button" type="button" (click)="editSector()">Editar setor</button>
+              <button class="danger-button" type="button" (click)="deleteSector()" [disabled]="isSaving()">Excluir setor</button>
+            </div>
+          }
+        </div>
+
+        @if (isLoading()) { <p class="yard-empty">Carregando mapa…</p> }
+        @else if (!activeSector()) { <p class="yard-empty">Cadastre o primeiro setor para começar a organizar o pátio.</p> }
+        @else {
+          <div class="yard-map-layout">
+            <div class="yard-map">
+              <div class="map-caption"><span>ENTRADA / ACESSO</span><i></i></div>
+              <div class="map-columns" [style.--column-count]="activeSector()!.colunas">
+                @for (cell of gridCells(); track cell.linha + ':' + cell.coluna) {
+                  @if (cell.vaga) {
+                    <button type="button" class="parking-slot" [class.occupied]="cell.vaga.carroId !== null" [class.selected]="selectedSlotId() === cell.vaga.id" (click)="selectSlot(cell.vaga)" [attr.aria-label]="cell.vaga.codigoVaga + (cell.vaga.carroNome ? ', ' + cell.vaga.carroNome : ', vaga livre')">
+                      <span class="slot-code">{{ cell.vaga.codigoVaga }}</span>
+                      <strong>{{ cell.vaga.carroNome || 'Livre' }}</strong>
+                      <small>{{ formatType(cell.vaga.tipo) }} · L{{ cell.linha }} C{{ cell.coluna }}</small>
+                    </button>
+                  } @else {
+                    <button type="button" class="parking-slot missing-slot" (click)="beginNewSlot(cell.linha, cell.coluna)" [attr.aria-label]="'Cadastrar vaga na linha ' + cell.linha + ', coluna ' + cell.coluna">
+                      <span>+</span><small>L{{ cell.linha }} C{{ cell.coluna }}</small>
+                    </button>
+                  }
+                }
+              </div>
+              <div class="map-legend"><span><i class="legend-free"></i>Livre</span><span><i class="legend-occupied"></i>Ocupada</span><span><i class="legend-selected"></i>Selecionada</span></div>
+            </div>
+
+            <section class="slot-editor">
+              <div class="slot-editor-heading"><div><p class="eyebrow">GERENCIAR VAGAS</p><h2>{{ selectedSlot() ? selectedSlot()!.codigoVaga : 'Nova vaga' }}</h2></div>@if (selectedSlot()) {<button class="danger-button" type="button" (click)="deleteSlot()" [disabled]="isSaving()">Excluir</button>}</div>
+              <p class="slot-help">{{ selectedSlot() ? 'Atualize a posição ou altere o carro estacionado.' : 'Preencha os dados ou selecione uma célula vazia no mapa.' }}</p>
+              <form class="yard-form slot-form" [formGroup]="slotForm" (ngSubmit)="saveSlot()">
+                <label class="form-field"><span>Código da vaga</span><input formControlName="codigoVaga" maxlength="40" placeholder="Ex.: D-01" /></label>
+                <div class="position-fields">
+                  <label class="form-field"><span>Linha</span><input formControlName="linha" type="number" min="1" [max]="activeSector()!.linhas" /></label>
+                  <label class="form-field"><span>Coluna</span><input formControlName="coluna" type="number" min="1" [max]="activeSector()!.colunas" /></label>
+                </div>
+                <label class="form-field"><span>Tipo</span><select formControlName="tipo"><option value="NORMAL">Normal</option><option value="COBERTA">Coberta</option><option value="PREFERENCIAL">Preferencial</option></select></label>
+                <label class="form-field"><span>Carro estacionado</span><select formControlName="carroId"><option [ngValue]="0">Vaga livre</option>@for (car of availableCars(); track car.id) {<option [ngValue]="car.id">{{ car.nome }}</option>}</select></label>
+                <button class="save-button slot-save" type="submit" [disabled]="isSaving()">{{ isSaving() ? 'Salvando…' : selectedSlot() ? 'Salvar alterações' : 'Cadastrar vaga' }}</button>
+              </form>
+              @if (cars().length === 0) {<p class="slot-help">Cadastre carros antes de associá-los às vagas.</p>}
+            </section>
+          </div>
+        }
+      </section>
+    </div>
+  </section>
+</main>
