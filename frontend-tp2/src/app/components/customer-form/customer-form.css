@@ -87,7 +87,7 @@
 }
 
 .field-success {
-  color: #a5e8c5;
+  color: var(--success-text);
   font-size: 11px;
 }
 

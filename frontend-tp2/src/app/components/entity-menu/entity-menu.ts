@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { ThemeService } from '../../services/theme.service';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
@@ -8,4 +9,5 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   styleUrl: './entity-menu.css',
 })
 export class EntityMenu {
+  protected readonly theme = inject(ThemeService);
 }
